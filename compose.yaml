@@ -6,7 +6,7 @@ services:
     volumes:
       - 'mongodb_data_container:/data/db'
     environment:
-      - "MONGO_INITDB_DATABASE=myDatabase"
+      - "MONGO_INITDB_DATABASE=mydatabase"
       - "MONGO_INITDB_ROOT_PASSWORD=secret"
       - "MONGO_INITDB_ROOT_USERNAME=root"
     ports:

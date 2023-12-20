@@ -1,5 +1,8 @@
 package com.deepak.mongoreactive.models;
 
+import lombok.Getter;
+
+@Getter
 public enum Symptom {
     FEVER("Fever"),
     HEADACHE("Headache"),
@@ -19,7 +22,4 @@ public enum Symptom {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

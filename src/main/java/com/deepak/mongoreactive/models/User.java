@@ -5,8 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Document
 @Getter
@@ -23,13 +22,6 @@ public class User {
     private String phoneNumber;
     private int age;
     private String email;
-    private AppointmentType appointmentType;
-    private AppointmentFor appointmentFor;
-    private String appointmentForName;
-    private String appointmentForAge;
-    private Symptom symptom;
-    private String otherSymptoms;
-    private LocalDateTime time;
-    private String doctorName;
+    private List<AppointmentDetails> appointmentDetails;
 
 }

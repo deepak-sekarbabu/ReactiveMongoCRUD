@@ -1,7 +1,10 @@
 package com.deepak.mongoreactive.models;
 
+import lombok.Getter;
+
+@Getter
 public enum AppointmentType {
-    CHECKUP("Regular Checkup"),
+    GENERAL_CHECKUP("Regular Checkup"),
     DENTAL("Dental Checkup"),
     VACCINATION("Vaccination"),
     CONSULTATION("Consultation"),
@@ -13,7 +16,4 @@ public enum AppointmentType {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

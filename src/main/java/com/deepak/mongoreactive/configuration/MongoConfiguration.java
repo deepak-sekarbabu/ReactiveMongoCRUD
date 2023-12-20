@@ -33,17 +33,4 @@ public class MongoConfiguration extends AbstractReactiveMongoConfiguration {
     public ReactiveMongoTemplate reactiveMongoTemplate() {
         return new ReactiveMongoTemplate(reactiveMongoClient(), getDatabaseName());
     }
-
-/*    @Bean
-    @ConditionalOnProperty(prefix = "job.autorun", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public CommandLineRunner loadData(UserRepository repository) {
-        return (args) -> {
-            // save a couple of users
-            var users = Flux.just(
-                    new User("Test", "10", "Test@test.com")
-            );
-            User user = User.builder().firstName()
-            repository.saveAll(users).subscribe();
-        };
-    }*/
 }

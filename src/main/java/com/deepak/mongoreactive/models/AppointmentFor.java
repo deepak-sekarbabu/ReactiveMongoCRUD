@@ -1,5 +1,8 @@
 package com.deepak.mongoreactive.models;
 
+import lombok.Getter;
+
+@Getter
 public enum AppointmentFor {
     SELF("Self"),
     SPOUSE("Spouse"),
@@ -13,7 +16,4 @@ public enum AppointmentFor {
         this.displayName = displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 }

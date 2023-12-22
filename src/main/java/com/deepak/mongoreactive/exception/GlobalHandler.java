@@ -16,12 +16,13 @@ public class GlobalHandler {
     public ResponseEntity<String> handleException(Exception ex) {
         LOGGER.error("An error occurred: {}", ex.getMessage());
         ex.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred. Please try again later.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred. Please try again later.");
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
-        if (!(ex.getStatusCode().value() == 404)) {
+        if (ex.getStatusCode().value() != 404) {
             ex.printStackTrace();
         }
         LOGGER.error("A ResponseStatusException occurred: {}", ex.getMessage());

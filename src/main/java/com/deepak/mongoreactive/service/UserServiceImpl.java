@@ -1,7 +1,5 @@
 package com.deepak.mongoreactive.service;
 
-
-import com.deepak.mongoreactive.controller.UserController;
 import com.deepak.mongoreactive.exception.UserNotFoundException;
 import com.deepak.mongoreactive.models.AppointmentDetails;
 import com.deepak.mongoreactive.models.User;
@@ -22,7 +20,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final ReactiveMongoTemplate template;
@@ -34,91 +32,126 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> getUserById(String id) {
-        LOGGER.info("Attempting to retrieve user with ID: " + id);
-
+        LOGGER.info("Attempting to retrieve user with ID: {}", id);
         return this.userRepository.findById(id)
-                .doOnNext(user -> LOGGER.info("User retrieved successfully: " + user.toString()))
-                .doOnError(error -> LOGGER.error("Error occurred while fetching user: " + error.getMessage()))
+                .doOnNext(user -> LOGGER.info("User retrieved successfully: {}", user))
+                .doOnError(error -> LOGGER.error("Error occurred while fetching user: {}", error.getMessage()))
                 .doOnCancel(() -> LOGGER.warn("User retrieval cancelled"))
-                .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: " + signalType));
+                .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: {}", signalType));
     }
 
     @Override
     public Flux<User> getUsers() {
-        LOGGER.info("Attempting to retrieve all users ");
-        return userRepository.findAll()
-                .doOnNext(user -> LOGGER.info("Users retrieved successfully"))
-                .doOnError(error -> LOGGER.error("Error occurred while fetching user: " + error.getMessage()))
-                .doOnCancel(() -> LOGGER.warn("Users retrieval cancelled"))
-                .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: " + signalType));
+        LOGGER.info("Attempting to retrieve all users");
+        return this.userRepository.findAll()
+                .doOnNext(user -> LOGGER.info("User retrieved successfully: {}", user.getId()))
+                .doOnError(error -> LOGGER.error("Error occurred while fetching users: {}", error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("User retrieval cancelled"))
+                .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: {}", signalType));
     }
 
     @Override
     public Mono<User> saveUser(User userDTO) {
-        return userRepository.save(userDTO)
-                .doOnNext(user -> LOGGER.info("User saved successfully"))
-                .doOnError(error -> LOGGER.error("Error occurred while saving user: " + error.getMessage()))
-                .doOnCancel(() -> LOGGER.warn("Users saving cancelled"))
-                .doFinally(signalType -> LOGGER.debug("User saving completed with signal: " + signalType));
+        String userPhoneNumber = userDTO.getPhoneNumber();
+        // Generate custom appointment IDs for each appointment in the user's details
+        if (userDTO.getAppointmentDetails() != null) {
+            userDTO.getAppointmentDetails().forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
+        }
+
+        return this.userRepository.save(userDTO)
+                .doOnSuccess(user -> LOGGER.info("User saved successfully with ID: {}", user.getId()))
+                .doOnError(error -> LOGGER.error("Error occurred while saving user: {}", error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
+                .doFinally(signalType -> LOGGER.debug("User saving completed with signal: {}", signalType));
     }
 
     public Mono<User> updateUser(String id, User userDTO) {
-        return userRepository.findById(id)
+        return this.userRepository.findById(id)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")))
-                .flatMap(existingUser -> {
-                    existingUser.setFirstName(userDTO.getFirstName() != null ? userDTO.getFirstName() : existingUser.getFirstName());
-                    existingUser.setLastName(userDTO.getLastName() != null ? userDTO.getLastName() : existingUser.getLastName());
-                    existingUser.setPhoneNumber(userDTO.getPhoneNumber() != null ? userDTO.getPhoneNumber() : existingUser.getPhoneNumber());
-                    existingUser.setAge(userDTO.getAge() != 0 ? userDTO.getAge() : existingUser.getAge());
-                    existingUser.setEmail(userDTO.getEmail() != null ? userDTO.getEmail() : existingUser.getEmail());
-
-                    List<AppointmentDetails> appointmentDetailsList = existingUser.getAppointmentDetails();
-                    List<AppointmentDetails> dtoAppointmentDetailsList = userDTO.getAppointmentDetails();
-
-                    if (appointmentDetailsList.size() == dtoAppointmentDetailsList.size()) {
-                        int index = 0;
-                        for (AppointmentDetails appointmentDetails : appointmentDetailsList) {
-                            AppointmentDetails dtoAppointmentDetails = dtoAppointmentDetailsList.get(index);
-                            // Set appointment details if not null
-                            appointmentDetails.setAppointmentType(dtoAppointmentDetails.getAppointmentType());
-                            appointmentDetails.setAppointmentFor(dtoAppointmentDetails.getAppointmentFor());
-                            appointmentDetails.setAppointmentForName(dtoAppointmentDetails.getAppointmentForName());
-                            appointmentDetails.setAppointmentForAge(dtoAppointmentDetails.getAppointmentForAge());
-                            appointmentDetails.setSymptom(dtoAppointmentDetails.getSymptom());
-                            appointmentDetails.setOtherSymptoms(dtoAppointmentDetails.getOtherSymptoms());
-                            appointmentDetails.setAppointmentDate(dtoAppointmentDetails.getAppointmentDate());
-                            appointmentDetails.setDoctorName(dtoAppointmentDetails.getDoctorName());
-                            appointmentDetails.setClinicId(dtoAppointmentDetails.getClinicId());
-                            index++;
-                        }
-                    } else {
-                        // Add new appointment details
-                        for (AppointmentDetails dtoAppointmentDetails : dtoAppointmentDetailsList) {
-                            if (!appointmentDetailsList.contains(dtoAppointmentDetails)) {
-                                appointmentDetailsList.add(dtoAppointmentDetails);
-                            }
-                        }
-                    }
-                    return userRepository.save(existingUser)
-                            .doOnNext(user -> LOGGER.info("User updated successfully"))
-                            .doOnError(error -> LOGGER.error("Error occurred while updating user: " + error.getMessage()))
-                            .doOnCancel(() -> LOGGER.warn("User updating cancelled"))
-                            .doFinally(signalType -> LOGGER.debug("User update completed with signal: " + signalType));
-                });
+                .flatMap(existingUser -> this.updateUserDetails(existingUser, userDTO))
+                .flatMap(user -> this.updateAppointmentDetails(user, userDTO))
+                .flatMap(this.userRepository::save)
+                .doOnSuccess(user -> LOGGER.info("User with ID {} updated successfully", user.getId()))
+                .doOnError(error -> LOGGER.error("Error occurred while updating user with ID {}: {}", id,
+                        error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("User updating cancelled for ID: {}", id))
+                .doFinally(signalType -> LOGGER.debug("User update completed with signal: {}", signalType));
     }
 
+    private Mono<User> updateUserDetails(User existingUser, User userDTO) {
+        existingUser
+                .setFirstName(userDTO.getFirstName() != null ? userDTO.getFirstName() : existingUser.getFirstName());
+        existingUser.setLastName(userDTO.getLastName() != null ? userDTO.getLastName() : existingUser.getLastName());
+        existingUser.setPhoneNumber(
+                userDTO.getPhoneNumber() != null ? userDTO.getPhoneNumber() : existingUser.getPhoneNumber());
+        existingUser.setAge(userDTO.getAge() != 0 ? userDTO.getAge() : existingUser.getAge());
+        existingUser.setEmail(userDTO.getEmail() != null ? userDTO.getEmail() : existingUser.getEmail());
+
+        return Mono.just(existingUser);
+    }
+
+    private Mono<User> updateAppointmentDetails(User user, User userDTO) {
+        String userPhoneNumber = userDTO.getPhoneNumber();
+        List<AppointmentDetails> existingDetails = user.getAppointmentDetails();
+        List<AppointmentDetails> newDetails = userDTO.getAppointmentDetails();
+
+        if (existingDetails.size() == newDetails.size()) {
+            this.updateExistingAppointments(existingDetails, newDetails);
+        } else {
+            this.addNewAppointments(existingDetails, newDetails, userPhoneNumber);
+        }
+
+        return Mono.just(user);
+    }
+
+    private void updateExistingAppointments(List<AppointmentDetails> existingDetails,
+                                            List<AppointmentDetails> newDetails) {
+        for (int i = 0; i < existingDetails.size(); i++) {
+            AppointmentDetails existing = existingDetails.get(i);
+            AppointmentDetails newDetail = newDetails.get(i);
+
+            // Update existing appointment details
+            this.updateAppointment(existing, newDetail);
+        }
+    }
+
+    private void addNewAppointments(List<AppointmentDetails> existingDetails, List<AppointmentDetails> newDetails,
+                                    String phoneNumber) {
+        for (AppointmentDetails newDetail : newDetails) {
+            if (!existingDetails.contains(newDetail)) {
+                if (newDetail.getAppointmentId() == null) {
+                    newDetail.generateCustomAppointmentId(phoneNumber);
+                }
+                existingDetails.add(newDetail);
+            }
+        }
+    }
+
+    private void updateAppointment(AppointmentDetails existing, AppointmentDetails newDetail) {
+        existing.setAppointmentType(newDetail.getAppointmentType());
+        existing.setAppointmentFor(newDetail.getAppointmentFor());
+        existing.setAppointmentForName(newDetail.getAppointmentForName());
+        existing.setAppointmentForAge(newDetail.getAppointmentForAge());
+        existing.setSymptom(newDetail.getSymptom());
+        existing.setOtherSymptoms(newDetail.getOtherSymptoms());
+        existing.setAppointmentDate(newDetail.getAppointmentDate());
+        existing.setDoctorName(newDetail.getDoctorName());
+        existing.setClinicId(newDetail.getClinicId());
+    }
 
     @Override
     public Mono<Void> deleteUser(String id) {
-        return userRepository.deleteById(id)
-                .doOnNext(user -> LOGGER.info("User deleted successfully"))
-                .doOnError(error -> LOGGER.error("Error occurred while deleting user: " + error.getMessage()))
-                .doOnCancel(() -> LOGGER.warn("User delete cancelled"))
-                .doFinally(signalType -> LOGGER.debug("User delete completed with signal: " + signalType));
+        return this.userRepository.deleteById(id)
+                .doOnSuccess(user -> LOGGER.info("User deleted successfully with ID: {}", id))
+                .doOnError(error -> LOGGER.error("Error occurred while deleting user with ID {}: {}", id,
+                        error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("Deletion of user with ID {} cancelled", id))
+                .doFinally(signalType -> LOGGER.debug("Deletion of user with ID {} completed with signal: {}", id,
+                        signalType));
     }
 
     @Override
     public Mono<Long> deleteByName(String name) {
-        return template.remove(query(where("name").is(name)), User.class).map(DeleteResult::getDeletedCount);
+        return this.template.remove(query(where("name").is(name)), User.class).map(DeleteResult::getDeletedCount);
     }
 }

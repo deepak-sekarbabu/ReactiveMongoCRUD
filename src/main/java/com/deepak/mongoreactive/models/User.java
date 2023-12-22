@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document
+@Document(collection = "user")
 @Getter
 @Setter
 @ToString(exclude = {"firstName", "phoneNumber", "email"})

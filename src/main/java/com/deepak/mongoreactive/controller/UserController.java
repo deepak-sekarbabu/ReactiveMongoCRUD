@@ -10,37 +10,47 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/user")
 public class UserController {
 
-
     private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    /**
+     * User REST controller.
+     * Handles CRUD operations for User resources.
+     * <p>
+     * Mappings:
+     *
+     * @PostMapping - Creates a new User from request body.
+     * @GetMapping - Gets all Users.
+     * @GetMapping("/{id}") - Gets User by ID.
+     * @PutMapping("/{id}") - Updates User by ID from request body.
+     * @DeleteMapping("/{id}") - Deletes User by ID.
+     */
     @PostMapping
     public Mono<User> createUser(@RequestBody User user) {
-        return userService.saveUser(user);
+        return this.userService.saveUser(user);
     }
 
     @GetMapping
     public Flux<User> getAllUsers() {
-        return userService.getUsers();
+        return this.userService.getUsers();
     }
 
     @GetMapping("/{id}")
     public Mono<User> getUserById(@PathVariable String id) {
-        return userService.getUserById(id);
+        return this.userService.getUserById(id);
     }
 
     @PutMapping("/{id}")
     public Mono<User> updateUser(@PathVariable String id, @RequestBody User updatedUser) {
-        return userService.updateUser(id, updatedUser);
+        return this.userService.updateUser(id, updatedUser);
     }
 
     @DeleteMapping("/{id}")
     public Mono<Void> deleteUser(@PathVariable String id) {
-        return userService.deleteUser(id);
+        return this.userService.deleteUser(id);
     }
-
 
 }

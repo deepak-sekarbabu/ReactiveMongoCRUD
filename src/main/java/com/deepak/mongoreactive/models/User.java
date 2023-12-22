@@ -10,7 +10,7 @@ import java.util.List;
 @Document
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"firstName", "phoneNumber", "email"})
 @EqualsAndHashCode
 @JsonFormat
 @Builder

@@ -21,4 +21,5 @@ public class AppointmentDetails {
     private String otherSymptoms;
     private LocalDateTime appointmentDate;
     private String doctorName;
+    private String clinicId;
 }

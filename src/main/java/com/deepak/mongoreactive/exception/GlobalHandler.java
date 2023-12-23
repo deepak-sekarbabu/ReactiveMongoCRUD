@@ -34,4 +34,11 @@ public class GlobalHandler {
         LOGGER.error("Requested User Not found: {}", ex.getMessage());
         return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
     }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleDuplicateUser(UserAlreadyExistsException ex) {
+        String errorMessage = "User already exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+    }
 }

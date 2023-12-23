@@ -1,5 +1,6 @@
 package com.deepak.mongoreactive.service;
 
+import com.deepak.mongoreactive.exception.UserAlreadyExistsException;
 import com.deepak.mongoreactive.exception.UserNotFoundException;
 import com.deepak.mongoreactive.models.AppointmentDetails;
 import com.deepak.mongoreactive.models.User;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -52,21 +54,29 @@ public class UserServiceImpl implements UserService {
                 .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: {}", signalType));
     }
 
-    @Override
     public Mono<User> saveUser(User userDTO) {
         String userPhoneNumber = userDTO.getPhoneNumber();
-        // Generate custom appointment IDs for each appointment in the user's details
-        if (userDTO.getAppointmentDetails() != null) {
-            userDTO.getAppointmentDetails()
-                    .forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
-        }
 
-        return this.userRepository.save(userDTO)
-                .doOnSuccess(user -> LOGGER.info("User saved successfully with ID: {}", user.getId()))
-                .doOnError(error -> LOGGER.error("Error occurred while saving user: {}", error.getMessage()))
-                .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
-                .doFinally(signalType -> LOGGER.debug("User saving completed with signal: {}", signalType));
+        return this.userRepository.findByPhoneNumber(userPhoneNumber)
+                .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException(
+                        "User with phone number " + userPhoneNumber + " already exists")))
+                .switchIfEmpty(Mono.defer(() -> {
+
+                    // Generate custom appointment IDs for each appointment in the user's details
+                    if (userDTO.getAppointmentDetails() != null) {
+                        userDTO.getAppointmentDetails()
+                                .forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
+                    }
+
+                    return userRepository.save(userDTO)
+                            .doOnSuccess(user -> LOGGER.info("User saved successfully with ID: {}", user.getId()))
+                            .doOnError(error -> LOGGER.error("Error occurred while saving user: {}", error.getMessage()))
+                            .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
+                            .doFinally(signalType -> LOGGER.debug("User saving completed with signal: {}", signalType));
+                }))
+                .cast(User.class);
     }
+
 
     public Mono<User> updateUser(String id, User userDTO) {
         return this.userRepository.findById(id)
@@ -158,11 +168,36 @@ public class UserServiceImpl implements UserService {
         return this.template.remove(query(where("name").is(name)), User.class).map(DeleteResult::getDeletedCount);
     }
 
-    public Mono<User> findByMobileNumber(String phoneNumber) {
+    @Override
+    public Mono<User> findByPhoneNumber(String phoneNumber) {
         return this.template.findOne(
                 Query.query(Criteria.where("phoneNumber").is(phoneNumber)),
                 User.class);
 
+    }
+
+    @Override
+    public Mono<User> getUserWithActiveAppointmentsUsingUserId(String userId) {
+        return this.userRepository.findById(userId)
+                .map(user -> {
+                    user.setAppointmentDetails(
+                            user.getAppointmentDetails().stream()
+                                    .filter(appt -> appt.isActive())
+                                    .collect(Collectors.toList()));
+                    return user;
+                });
+    }
+
+
+    public Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber) {
+        return this.userRepository.findByPhoneNumber(phoneNumber)
+                .map(user -> {
+                    user.setAppointmentDetails(
+                            user.getAppointmentDetails().stream()
+                                    .filter(appt -> appt.isActive())
+                                    .collect(Collectors.toList()));
+                    return user;
+                });
     }
 
 }

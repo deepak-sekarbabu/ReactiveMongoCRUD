@@ -27,6 +27,7 @@ public class UserController {
      * @GetMapping("/{id}") - Gets User by ID.
      * @PutMapping("/{id}") - Updates User by ID from request body.
      * @DeleteMapping("/{id}") - Deletes User by ID.
+     * @GetMapping("/getByPhoneNumber/{phoneNumber} - Gets User by PhoneNumber
      */
     @PostMapping
     public Mono<User> createUser(@RequestBody User user) {
@@ -53,9 +54,9 @@ public class UserController {
         return this.userService.deleteUser(id);
     }
 
-    @GetMapping("/getByPhoneNumber/{mobileNumber}")
-    public Mono<User> getUserByPhoneNumber(@PathVariable String mobileNumber) {
-        return this.userService.findByMobileNumber(mobileNumber);
+    @GetMapping("/getByPhoneNumber/{phoneNumber}")
+    public Mono<User> getUserByPhoneNumber(@PathVariable String phoneNumber) {
+        return this.userService.findByPhoneNumber(phoneNumber);
     }
 
 }

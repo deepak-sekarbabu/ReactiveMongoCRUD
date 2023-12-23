@@ -23,6 +23,7 @@ public class AppointmentDetails {
     private LocalDateTime appointmentDate;
     private String doctorName;
     private String clinicId;
+    private boolean active;
 
     public void generateCustomAppointmentId(String userPhoneNumber) {
         // Generate a custom appointment ID using the user's phone number and current time

@@ -17,5 +17,10 @@ public interface UserService {
 
     Mono<Long> deleteByName(String name);
 
-    Mono<User> findByMobileNumber(String phoneNumber);
+    Mono<User> findByPhoneNumber(String phoneNumber);
+
+    Mono<User> getUserWithActiveAppointmentsUsingUserId(String userId);
+
+    Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber);
+
 }

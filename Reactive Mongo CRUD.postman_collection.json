@@ -1,483 +1,483 @@
 {
-	"info": {
-		"_postman_id": "a93fb1a4-76ca-4d2b-bf95-86f60ac0bc88",
-		"name": "Reactive Mongo CRUD",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "5897964"
-	},
-	"item": [
-		{
-			"name": "Get Users",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"\r",
-							"pm.test(\"Response status code is 200\", function () {\r",
-							"  pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Email is in a valid format\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"\r",
-							"  pm.expect(responseData).to.be.an('array');\r",
-							"  responseData.forEach(function(user) {\r",
-							"    pm.expect(user.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
-							"  });\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Age is a non-negative integer\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('array');\r",
-							"  responseData.forEach(function(user) {\r",
-							"    pm.expect(user.age).to.be.a('number');\r",
-							"    pm.expect(user.age).to.be.at.least(0);\r",
-							"  });\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Content-Type is application/json\", function () {\r",
-							"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
-							"});\r",
-							"\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/user",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create User with Single Appointment",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"\r",
-							"pm.test(\"Response status code is 200\", function () {\r",
-							"  pm.expect(pm.response.code).to.equal(200);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"\r",
-							"pm.test(\"Content-Type header is application/json\", function () {\r",
-							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
-							"    const responseData = pm.response.json();\r",
-							"    \r",
-							"    pm.expect(responseData).to.be.an('object');\r",
-							"    pm.expect(responseData).to.include.all.keys('id', 'name', 'age', 'email');\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Email is in a valid format\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('object');\r",
-							"  pm.expect(responseData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Age is a non-negative integer\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('object');\r",
-							"  pm.expect(responseData.age).to.be.a('number').and.to.satisfy((age) => age >= 0, \"Age must be a non-negative integer\");\r",
-							"});\r",
-							"\r",
-							"// Stores the userId in a collection variable\r",
-							"var userId = pm.response.json().id;\r",
-							"pm.collectionVariables.set(\"userId\", userId);"
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const timestamp = new Date().toISOString();\r",
-							"\r",
-							"// Set the timestamp to an environment or global variable\r",
-							"pm.environment.set(\"currentTimestamp\", timestamp);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"Deepak\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/user",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create User With Multiple Appointments",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const timestamp = new Date().toISOString();\r",
-							"\r",
-							"// Set the timestamp to an environment or global variable\r",
-							"pm.environment.set(\"currentTimestamp\", timestamp);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"John Doe\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        },\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"KIDS\",\r\n            \"appointmentForName\": \"Philip Doe\",\r\n            \"appointmentForAge\": \"10\",\r\n            \"symptom\": \"FEVER\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Phiip\"\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/user",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Appointment for User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/appointments/Deepak",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"appointments",
-						"Deepak"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/user/6582edbc6194a74761fdf3c2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user",
-						"6582edbc6194a74761fdf3c2"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"\r",
-							"pm.test(\"Response status code is 200\", function () {\r",
-							"    pm.expect(pm.response.code).to.equal(200);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('object');\r",
-							"  pm.expect(responseData).to.have.property('id');\r",
-							"  pm.expect(responseData).to.have.property('name');\r",
-							"  pm.expect(responseData).to.have.property('age');\r",
-							"  pm.expect(responseData).to.have.property('email');\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Email is in a valid format\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('object');\r",
-							"  pm.expect(responseData.email).to.match(/\\S+@\\S+\\.\\S+/);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Age is a non-negative integer\", function () {\r",
-							"    const responseData = pm.response.json();\r",
-							"    \r",
-							"    pm.expect(responseData).to.be.an('object');\r",
-							"    pm.expect(responseData.age).to.be.a('number');\r",
-							"    pm.expect(responseData.age).to.be.at.least(0);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Name is a non-empty string\", function () {\r",
-							"  const responseData = pm.response.json();\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.an('object');\r",
-							"  pm.expect(responseData.name).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
-							"});\r",
-							"\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"PARENTS\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"Deepak\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        }\r\n    ]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/user/{{userId}}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user",
-						"{{userId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"\r",
-							"pm.test(\"Response status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Content type is 'text/xml'\", function () {\r",
-							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/xml\");\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Response body is null\", function () {\r",
-							"  const responseData = xml2Json(pm.response.text());\r",
-							"  \r",
-							"  pm.expect(responseData).to.be.null;\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Verify that the userId is removed from the system\", function () {\r",
-							"    const responseData = xml2Json(pm.response.text());\r",
-							"\r",
-							"    pm.expect(responseData).to.be.null;\r",
-							"});\r",
-							"\r",
-							"\r",
-							"pm.test(\"Response is empty\", function () {\r",
-							"    const responseData = xml2Json(pm.response.text());\r",
-							"    \r",
-							"    pm.expect(responseData).to.be.null;\r",
-							"});\r",
-							"\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/user/{{userId}}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"user",
-						"{{userId}}"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "userId",
-			"value": "",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "a93fb1a4-76ca-4d2b-bf95-86f60ac0bc88",
+    "name": "Reactive Mongo CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "5897964"
+  },
+  "item": [
+    {
+      "name": "Get Users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Response status code is 200\", function () {\r",
+              "  pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Email is in a valid format\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "\r",
+              "  pm.expect(responseData).to.be.an('array');\r",
+              "  responseData.forEach(function(user) {\r",
+              "    pm.expect(user.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
+              "  });\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Age is a non-negative integer\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('array');\r",
+              "  responseData.forEach(function(user) {\r",
+              "    pm.expect(user.age).to.be.a('number');\r",
+              "    pm.expect(user.age).to.be.at.least(0);\r",
+              "  });\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User with Single Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Response status code is 200\", function () {\r",
+              "  pm.expect(pm.response.code).to.equal(200);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "\r",
+              "pm.test(\"Content-Type header is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
+              "    const responseData = pm.response.json();\r",
+              "    \r",
+              "    pm.expect(responseData).to.be.an('object');\r",
+              "    pm.expect(responseData).to.include.all.keys('id', 'name', 'age', 'email');\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Email is in a valid format\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('object');\r",
+              "  pm.expect(responseData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Age is a non-negative integer\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('object');\r",
+              "  pm.expect(responseData.age).to.be.a('number').and.to.satisfy((age) => age >= 0, \"Age must be a non-negative integer\");\r",
+              "});\r",
+              "\r",
+              "// Stores the userId in a collection variable\r",
+              "var userId = pm.response.json().id;\r",
+              "pm.collectionVariables.set(\"userId\", userId);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const timestamp = new Date().toISOString();\r",
+              "\r",
+              "// Set the timestamp to an environment or global variable\r",
+              "pm.environment.set(\"currentTimestamp\", timestamp);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"Deepak\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User With Multiple Appointments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const timestamp = new Date().toISOString();\r",
+              "\r",
+              "// Set the timestamp to an environment or global variable\r",
+              "pm.environment.set(\"currentTimestamp\", timestamp);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"John Doe\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        },\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"KIDS\",\r\n            \"appointmentForName\": \"Philip Doe\",\r\n            \"appointmentForAge\": \"10\",\r\n            \"symptom\": \"FEVER\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Phiip\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Appointment for User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/appointments/Deepak",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "appointments",
+            "Deepak"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/user/6582edbc6194a74761fdf3c2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user",
+            "6582edbc6194a74761fdf3c2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Response status code is 200\", function () {\r",
+              "    pm.expect(pm.response.code).to.equal(200);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('object');\r",
+              "  pm.expect(responseData).to.have.property('id');\r",
+              "  pm.expect(responseData).to.have.property('name');\r",
+              "  pm.expect(responseData).to.have.property('age');\r",
+              "  pm.expect(responseData).to.have.property('email');\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Email is in a valid format\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('object');\r",
+              "  pm.expect(responseData.email).to.match(/\\S+@\\S+\\.\\S+/);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Age is a non-negative integer\", function () {\r",
+              "    const responseData = pm.response.json();\r",
+              "    \r",
+              "    pm.expect(responseData).to.be.an('object');\r",
+              "    pm.expect(responseData.age).to.be.a('number');\r",
+              "    pm.expect(responseData.age).to.be.at.least(0);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Name is a non-empty string\", function () {\r",
+              "  const responseData = pm.response.json();\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.an('object');\r",
+              "  pm.expect(responseData.name).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"1234567890\",\r\n    \"age\": 30,\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"PARENTS\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"Deepak\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/user/{{userId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Response status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Content type is 'text/xml'\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/xml\");\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Response body is null\", function () {\r",
+              "  const responseData = xml2Json(pm.response.text());\r",
+              "  \r",
+              "  pm.expect(responseData).to.be.null;\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Verify that the userId is removed from the system\", function () {\r",
+              "    const responseData = xml2Json(pm.response.text());\r",
+              "\r",
+              "    pm.expect(responseData).to.be.null;\r",
+              "});\r",
+              "\r",
+              "\r",
+              "pm.test(\"Response is empty\", function () {\r",
+              "    const responseData = xml2Json(pm.response.text());\r",
+              "    \r",
+              "    pm.expect(responseData).to.be.null;\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/user/{{userId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "user",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

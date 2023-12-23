@@ -8,6 +8,8 @@ import com.mongodb.client.result.DeleteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -55,7 +57,8 @@ public class UserServiceImpl implements UserService {
         String userPhoneNumber = userDTO.getPhoneNumber();
         // Generate custom appointment IDs for each appointment in the user's details
         if (userDTO.getAppointmentDetails() != null) {
-            userDTO.getAppointmentDetails().forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
+            userDTO.getAppointmentDetails()
+                    .forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
         }
 
         return this.userRepository.save(userDTO)
@@ -154,4 +157,12 @@ public class UserServiceImpl implements UserService {
     public Mono<Long> deleteByName(String name) {
         return this.template.remove(query(where("name").is(name)), User.class).map(DeleteResult::getDeletedCount);
     }
+
+    public Mono<User> findByMobileNumber(String phoneNumber) {
+        return this.template.findOne(
+                Query.query(Criteria.where("phoneNumber").is(phoneNumber)),
+                User.class);
+
+    }
+
 }

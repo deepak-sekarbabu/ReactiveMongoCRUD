@@ -16,4 +16,6 @@ public interface UserService {
     Mono<Void> deleteUser(String id);
 
     Mono<Long> deleteByName(String name);
+
+    Mono<User> findByMobileNumber(String phoneNumber);
 }

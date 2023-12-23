@@ -53,4 +53,9 @@ public class UserController {
         return this.userService.deleteUser(id);
     }
 
+    @GetMapping("/getByPhoneNumber/{mobileNumber}")
+    public Mono<User> getUserbyPhoneNUmber(@PathVariable String mobileNumber) {
+        return this.userService.findByMobileNumber(mobileNumber);
+    }
+
 }

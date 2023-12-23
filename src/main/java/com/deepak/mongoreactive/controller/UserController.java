@@ -54,7 +54,7 @@ public class UserController {
     }
 
     @GetMapping("/getByPhoneNumber/{mobileNumber}")
-    public Mono<User> getUserbyPhoneNUmber(@PathVariable String mobileNumber) {
+    public Mono<User> getUserByPhoneNumber(@PathVariable String mobileNumber) {
         return this.userService.findByMobileNumber(mobileNumber);
     }
 

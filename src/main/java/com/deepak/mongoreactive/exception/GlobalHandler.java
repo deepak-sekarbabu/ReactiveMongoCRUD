@@ -41,4 +41,11 @@ public class GlobalHandler {
         LOGGER.error(errorMessage);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }
+
+    @ExceptionHandler(CannotUpdatePhoneNumberException.class)
+    public ResponseEntity<String> handleUpdatePhoneNumberUsedByAnotherUser(CannotUpdatePhoneNumberException ex) {
+        String errorMessage = "User with phone number exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+    }
 }

@@ -1,5 +1,6 @@
 package com.deepak.mongoreactive.service;
 
+import com.deepak.mongoreactive.exception.CannotUpdatePhoneNumberException;
 import com.deepak.mongoreactive.exception.UserAlreadyExistsException;
 import com.deepak.mongoreactive.exception.UserNotFoundException;
 import com.deepak.mongoreactive.models.AppointmentDetails;
@@ -56,7 +57,6 @@ public class UserServiceImpl implements UserService {
 
     public Mono<User> saveUser(User userDTO) {
         String userPhoneNumber = userDTO.getPhoneNumber();
-
         return this.userRepository.findByPhoneNumber(userPhoneNumber)
                 .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException(
                         "User with phone number " + userPhoneNumber + " already exists")))
@@ -68,28 +68,47 @@ public class UserServiceImpl implements UserService {
                                 .forEach(appointment -> appointment.generateCustomAppointmentId(userPhoneNumber));
                     }
 
-                    return userRepository.save(userDTO)
+                    return this.userRepository.save(userDTO)
                             .doOnSuccess(user -> LOGGER.info("User saved successfully with ID: {}", user.getId()))
-                            .doOnError(error -> LOGGER.error("Error occurred while saving user: {}", error.getMessage()))
+                            .doOnError(
+                                    error -> LOGGER.error("Error occurred while saving user: {}", error.getMessage()))
                             .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
                             .doFinally(signalType -> LOGGER.debug("User saving completed with signal: {}", signalType));
                 }))
                 .cast(User.class);
     }
 
-
     public Mono<User> updateUser(String id, User userDTO) {
-        return this.userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")))
-                .flatMap(existingUser -> this.updateUserDetails(existingUser, userDTO))
-                .flatMap(user -> this.updateAppointmentDetails(user, userDTO))
-                .flatMap(this.userRepository::save)
-                .doOnSuccess(user -> LOGGER.info("User with ID {} updated successfully", user.getId()))
-                .doOnError(error -> LOGGER.error("Error occurred while updating user with ID {}: {}", id,
-                        error.getMessage()))
-                .doOnCancel(() -> LOGGER.warn("User updating cancelled for ID: {}", id))
-                .doFinally(signalType -> LOGGER.debug("User update completed with signal: {}", signalType));
+        String newPhoneNumber = userDTO.getPhoneNumber();
+        return this.userRepository.findByPhoneNumber(newPhoneNumber) // Check if the new phone number exists
+                .flatMap(existingUser -> {
+                    if (!existingUser.getId().equals(id)) {
+                        return Mono.error(new CannotUpdatePhoneNumberException("Cannot update phone number used by another User"));
+                    } else {
+                        return this.userRepository.findById(id)
+                                .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")))
+                                .flatMap(existingUser1 -> this.updateUserDetails(existingUser1, userDTO))
+                                .flatMap(user -> this.updateAppointmentDetails(user, userDTO))
+                                .flatMap(this.userRepository::save)
+                                .doOnSuccess(user -> LOGGER.info("User with ID {} updated successfully", user.getId()))
+                                .doOnError(error -> LOGGER.error("Error occurred while updating user with ID {}: {}", id,
+                                        error.getMessage()))
+                                .doOnCancel(() -> LOGGER.warn("User updating cancelled for ID: {}", id))
+                                .doFinally(signalType -> LOGGER.debug("User update completed with signal: {}", signalType));
+                    }
+                })
+                .switchIfEmpty(this.userRepository.findById(id)
+                        .switchIfEmpty(Mono.error(new UserNotFoundException("User with id " + id + " not found")))
+                        .flatMap(existingUser -> this.updateUserDetails(existingUser, userDTO))
+                        .flatMap(user -> this.updateAppointmentDetails(user, userDTO))
+                        .flatMap(this.userRepository::save)
+                        .doOnSuccess(user -> LOGGER.info("User with ID {} updated successfully", user.getId()))
+                        .doOnError(error -> LOGGER.error("Error occurred while updating user with ID {}: {}", id,
+                                error.getMessage()))
+                        .doOnCancel(() -> LOGGER.warn("User updating cancelled for ID: {}", id))
+                        .doFinally(signalType -> LOGGER.debug("User update completed with signal: {}", signalType)));
     }
+
 
     private Mono<User> updateUserDetails(User existingUser, User userDTO) {
         existingUser
@@ -150,6 +169,7 @@ public class UserServiceImpl implements UserService {
         existing.setAppointmentDate(newDetail.getAppointmentDate());
         existing.setDoctorName(newDetail.getDoctorName());
         existing.setClinicId(newDetail.getClinicId());
+        existing.setActive(newDetail.isActive());
     }
 
     @Override
@@ -187,7 +207,6 @@ public class UserServiceImpl implements UserService {
                     return user;
                 });
     }
-
 
     public Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber) {
         return this.userRepository.findByPhoneNumber(phoneNumber)

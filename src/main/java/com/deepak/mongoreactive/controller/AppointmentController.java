@@ -12,58 +12,58 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @RestController
-@RequestMapping("/appointment")
-@Tag(name = "Appointment", description = "Handles CRUD operations for Appointment")
+@RequestMapping("/appointments")
+@Tag(name = "Appointments", description = "Handles CRUD operations for Appointments")
 public class AppointmentController {
+
     private final UserService userService;
 
     public AppointmentController(UserService userService) {
         this.userService = userService;
     }
 
-    @GetMapping("/activebyid/{userId}")
-    @Operation(summary = "Get user with active Appointments only by userID")
+    @GetMapping("/active/user/{userId}")
+    @Operation(summary = "GetUserWithActiveAppointmentsByUserId")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User with appointment information retrieved"),
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserWithActiveAppointmentsUsingUserId(@PathVariable String userId) {
-        return this.userService.getUserWithActiveAppointmentsUsingUserId(userId);
+    public Mono<User> getUserWithActiveAppointmentsByUserId(@PathVariable String userId) {
+        return this.userService.getUserWithActiveAppointmentsByUserId(userId);
     }
 
-    @GetMapping("/activebyphoneNumber/{phoneNumber}")
-    @Operation(summary = "Get user with active Appointments only by phoneNumber")
+    @GetMapping("/active/phone/{phoneNumber}")
+    @Operation(summary = "GetUserWithActiveAppointmentsByPhoneNumber")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User with appointment information retrieved"),
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(@PathVariable String phoneNumber) {
-        return this.userService.getUserWithActiveAppointmentsUsingPhoneNumber(phoneNumber);
+    public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(@PathVariable String phoneNumber) {
+        return this.userService.getUserWithActiveAppointmentsByPhoneNumber(phoneNumber);
     }
 
-    @PostMapping("/cancelbyphonenumber/{phoneNumber}")
-    @Operation(summary = "Cancel appointment by phoneNumber")
+    @PostMapping("/cancel/phone/{phoneNumber}")
+    @Operation(summary = "CancelAppointmentByPhoneNumber")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> cancelAppointmentByPhoneNumber(@PathVariable String phoneNumber, @RequestBody List<String> appointmentId) {
-
-        return this.userService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentId);
+    public Mono<User> cancelAppointmentByPhoneNumber(@PathVariable String phoneNumber,
+                                                     @RequestBody List<String> appointmentIds) {
+        return this.userService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentIds);
     }
 
-    @PostMapping("/cancelbyid/{userId}")
-    @Operation(summary = "Cancel appointment by userid")
+    @PostMapping("/cancel/user/{userId}")
+    @Operation(summary = "CancelAppointmentByUserId")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> cancelAppointmentById(@PathVariable String userId, @RequestBody List<String> appointmentId) {
-
-        return this.userService.cancelAppointmentByUserId(userId, appointmentId);
+    public Mono<User> cancelAppointmentByUserId(@PathVariable String userId, @RequestBody List<String> appointmentIds) {
+        return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
     }
 }

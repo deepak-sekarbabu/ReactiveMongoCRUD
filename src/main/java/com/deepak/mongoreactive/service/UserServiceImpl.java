@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> getUserWithActiveAppointmentsUsingUserId(String userId) {
+    public Mono<User> getUserWithActiveAppointmentsByUserId(String userId) {
         return this.userRepository.findById(userId)
                 .map(user -> {
                     user.setAppointmentDetails(
@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
                 });
     }
 
-    public Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber) {
+    public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(String phoneNumber) {
         return this.userRepository.findByPhoneNumber(phoneNumber)
                 .map(user -> {
                     user.setAppointmentDetails(

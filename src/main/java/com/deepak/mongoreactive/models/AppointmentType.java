@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Schema(enumAsRef = true)
 public enum AppointmentType {
-    GENERAL_CHECKUP("Regular Checkup"),
+    GENERAL_CHECKUP("General Checkup"),
     DENTAL("Dental Checkup"),
     VACCINATION("Vaccination"),
     CONSULTATION("Consultation"),

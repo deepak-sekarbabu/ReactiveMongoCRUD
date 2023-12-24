@@ -21,9 +21,9 @@ public interface UserService {
 
     Mono<User> findByPhoneNumber(String phoneNumber);
 
-    Mono<User> getUserWithActiveAppointmentsUsingUserId(String userId);
+    Mono<User> getUserWithActiveAppointmentsByUserId(String userId);
 
-    Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber);
+    Mono<User> getUserWithActiveAppointmentsByPhoneNumber(String phoneNumber);
 
     Mono<User> cancelAppointmentByPhoneNumber(String phoneNumber, List<String> appointment);
 

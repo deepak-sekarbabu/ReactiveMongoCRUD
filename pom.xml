@@ -16,6 +16,8 @@
     <properties>
         <java.version>21</java.version>
         <springdoc-openapi-starter-webflux-ui.version>2.3.0</springdoc-openapi-starter-webflux-ui.version>
+        <logback-core.version>1.4.12</logback-core.version>
+        <logback-classic.version>1.4.12</logback-classic.version>
     </properties>
     <dependencies>
         <dependency>
@@ -80,7 +82,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.4.12</version>
+            <version>${logback-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
         </dependency>
     </dependencies>
 

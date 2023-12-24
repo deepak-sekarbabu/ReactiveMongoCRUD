@@ -202,7 +202,7 @@ public class UserServiceImpl implements UserService {
                 .map(user -> {
                     user.setAppointmentDetails(
                             user.getAppointmentDetails().stream()
-                                    .filter(appt -> appt.isActive())
+                                    .filter(AppointmentDetails::isActive)
                                     .collect(Collectors.toList()));
                     return user;
                 });
@@ -213,7 +213,7 @@ public class UserServiceImpl implements UserService {
                 .map(user -> {
                     user.setAppointmentDetails(
                             user.getAppointmentDetails().stream()
-                                    .filter(appt -> appt.isActive())
+                                    .filter(AppointmentDetails::isActive)
                                     .collect(Collectors.toList()));
                     return user;
                 });

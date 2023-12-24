@@ -1,5 +1,6 @@
 package com.deepak.mongoreactive.exception;
 
+import jakarta.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -47,5 +48,11 @@ public class GlobalHandler {
         String errorMessage = "User with phone number exists: " + ex.getMessage();
         LOGGER.error(errorMessage);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Object> handleValidationException(ValidationException ex) {
+        LOGGER.error(ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

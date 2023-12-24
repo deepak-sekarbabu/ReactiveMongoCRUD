@@ -25,8 +25,8 @@ public class AppointmentDetails {
     private String clinicId;
     private boolean active;
 
-    public void generateCustomAppointmentId(String userPhoneNumber) {
+    public void generateCustomAppointmentId(String userPhoneNumber, String appointmentForName) {
         // Generate a custom appointment ID using the user's phone number and current time
-        this.appointmentId = userPhoneNumber + "_" + LocalDateTime.now();
+        this.appointmentId = userPhoneNumber + "_" + appointmentForName + "_" + LocalDateTime.now();
     }
 }

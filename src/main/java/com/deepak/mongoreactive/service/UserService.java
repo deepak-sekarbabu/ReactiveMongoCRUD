@@ -4,6 +4,8 @@ import com.deepak.mongoreactive.models.User;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface UserService {
     Mono<User> getUserById(String id);
 
@@ -22,5 +24,9 @@ public interface UserService {
     Mono<User> getUserWithActiveAppointmentsUsingUserId(String userId);
 
     Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(String phoneNumber);
+
+    Mono<User> cancelAppointmentByPhoneNumber(String phoneNumber, List<String> appointment);
+
+    Mono<User> cancelAppointmentByUserId(String phoneNumber, List<String> appointment);
 
 }

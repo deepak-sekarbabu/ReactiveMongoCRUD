@@ -6,11 +6,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/appointment")
@@ -42,5 +41,29 @@ public class AppointmentController {
     })
     public Mono<User> getUserWithActiveAppointmentsUsingPhoneNumber(@PathVariable String phoneNumber) {
         return this.userService.getUserWithActiveAppointmentsUsingPhoneNumber(phoneNumber);
+    }
+
+    @PostMapping("/cancelbyphonenumber/{phoneNumber}")
+    @Operation(summary = "Cancel appointment by phoneNumber")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "404", description = "User does not exist")
+    })
+    public Mono<User> cancelAppointmentByPhoneNumber(@PathVariable String phoneNumber, @RequestBody List<String> appointmentId) {
+
+        return this.userService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentId);
+    }
+
+    @PostMapping("/cancelbyid/{userId}")
+    @Operation(summary = "Cancel appointment by userid")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "404", description = "User does not exist")
+    })
+    public Mono<User> cancelAppointmentById(@PathVariable String userId, @RequestBody List<String> appointmentId) {
+
+        return this.userService.cancelAppointmentByUserId(userId, appointmentId);
     }
 }

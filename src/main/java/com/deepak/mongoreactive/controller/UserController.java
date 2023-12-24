@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +15,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/user")
 @Tag(name = "User", description = "Handles CRUD operations for User resources")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -41,9 +44,10 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public Mono<User> createUser(@RequestBody User user) {
+    public Mono<User> createUser(@Valid @RequestBody User user) {
         return this.userService.saveUser(user);
     }
+
 
     @GetMapping
     @Operation(summary = "Get all users")

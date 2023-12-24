@@ -9,9 +9,9 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 @SpringBootApplication
 @EnableWebFlux
-public class MongoreactiveApplication {
+public class MongoReactiveApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MongoreactiveApplication.class, args);
+        SpringApplication.run(MongoReactiveApplication.class, args);
     }
 
     @Configuration

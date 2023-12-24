@@ -9,7 +9,7 @@ import java.util.List;
 public interface UserService {
     Mono<User> getUserById(String id);
 
-    Flux<User> getUsers();
+    Flux<User> getUsers(int limit, int offset);
 
     Mono<User> saveUser(User userDtoMono);
 

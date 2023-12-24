@@ -55,9 +55,12 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved")
     })
-    public Flux<User> getAllUsers() {
-        return this.userService.getUsers();
+    public Flux<User> getAllUsers(
+            @RequestParam(value = "limit", defaultValue = "100") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return this.userService.getUsers(limit, offset);
     }
+
 
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve user by id")

@@ -49,9 +49,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Flux<User> getUsers() {
-        LOGGER.info("Attempting to retrieve all users");
+    public Flux<User> getUsers(int limit, int offset) {
+        LOGGER.info("Attempting to retrieve users with limit {} and offset {}", limit, offset);
+
         return this.userRepository.findAll()
+                .skip(offset)
+                .take(limit)
                 .doOnNext(user -> LOGGER.info("User retrieved successfully: {}", user.getId()))
                 .doOnError(error -> LOGGER.error("Error occurred while fetching users: {}",
                         error.getMessage()))

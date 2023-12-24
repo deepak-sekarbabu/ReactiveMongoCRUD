@@ -6,9 +6,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -44,6 +47,17 @@ public class AppointmentController {
         return this.userService.getUserWithActiveAppointmentsByPhoneNumber(phoneNumber);
     }
 
+    @GetMapping("/byDate/{date}")
+    @Operation(summary = "GetAppointmentsByDate")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid date format"),
+            @ApiResponse(responseCode = "404", description = "No appointments found for given date")
+    })
+    public Flux<User> getAppointmentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return this.userService.getAppointmentsByDate(date);
+    }
+
     @PostMapping("/cancel/phone/{phoneNumber}")
     @Operation(summary = "CancelAppointmentByPhoneNumber")
     @ApiResponses(value = {
@@ -66,4 +80,6 @@ public class AppointmentController {
     public Mono<User> cancelAppointmentByUserId(@PathVariable String userId, @RequestBody List<String> appointmentIds) {
         return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
     }
+
+
 }

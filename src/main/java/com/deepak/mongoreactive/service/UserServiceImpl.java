@@ -10,10 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,6 +65,17 @@ public class UserServiceImpl implements UserService {
                 .doOnCancel(() -> LOGGER.warn("User retrieval cancelled"))
                 .doFinally(signalType -> LOGGER.debug("User retrieval completed with signal: {}",
                         signalType));
+    }
+
+    @Override
+    public Flux<User> getAppointmentsByDate(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+        return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
+                .doOnNext(user -> LOGGER.info("User with appointment on {} retrieved: {}", (Object) date, user))
+                .doOnError(error -> LOGGER.error("Error getting users with appointment on {}: {}", date, error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("Get users by appointment date {} cancelled", date))
+                .doFinally(signalType -> LOGGER.debug("Get users by appointment date {} completed with signal: {}", date, signalType));
     }
 
     public Mono<User> saveUser(User userDTO) {

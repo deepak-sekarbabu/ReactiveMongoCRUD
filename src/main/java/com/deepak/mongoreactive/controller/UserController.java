@@ -46,8 +46,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public Mono<User> createUser(@Valid @RequestBody User user) {
-        return this.userService.saveUser(user);
+    public Mono<User> createUser(@Valid @RequestBody User userDTO) {
+        return this.userService.saveUser(userDTO);
     }
 
     @GetMapping
@@ -79,8 +79,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User does not exist"),
             @ApiResponse(responseCode = "409", description = "User update conflict")
     })
-    public Mono<User> updateUser(@PathVariable String id, @RequestBody User updatedUser) {
-        return this.userService.updateUser(id, updatedUser);
+    public Mono<User> updateUser(@PathVariable String id, @RequestBody User updatedUserDTO) {
+        return this.userService.updateUser(id, updatedUserDTO);
     }
 
     @DeleteMapping("/{id}")

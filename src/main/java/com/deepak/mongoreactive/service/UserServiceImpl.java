@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -73,7 +72,7 @@ public class UserServiceImpl implements UserService {
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
         return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
                 .doOnNext(user -> LOGGER.info("User with appointment on {} retrieved: {}",
-                        (Object) date, user))
+                        date, user))
                 .doOnError(error -> LOGGER.error("Error getting users with appointment on {}: {}", date,
                         error.getMessage()))
                 .doOnCancel(() -> LOGGER.warn("Get users by appointment date {} cancelled", date))
@@ -90,8 +89,8 @@ public class UserServiceImpl implements UserService {
         return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
                 .flatMap(user -> {
                     List<AppointmentDetails> activeAppointments = user.getAppointmentDetails().stream()
-                            .filter(AppointmentDetails -> AppointmentDetails.isActive() == active) // Filtering active appointments
-                            .collect(Collectors.toList());
+                            .filter(appointmentDetails -> appointmentDetails.isActive() == active) // Filtering active appointments
+                            .toList();
 
                     if (!activeAppointments.isEmpty()) {
                         user.setAppointmentDetails(activeAppointments); // Update user's active appointments
@@ -183,7 +182,7 @@ public class UserServiceImpl implements UserService {
                     user.setAppointmentDetails(
                             user.getAppointmentDetails().stream()
                                     .filter(AppointmentDetails::isActive)
-                                    .collect(Collectors.toList()));
+                                    .toList());
                     return user;
                 });
     }
@@ -194,7 +193,7 @@ public class UserServiceImpl implements UserService {
                     user.setAppointmentDetails(
                             user.getAppointmentDetails().stream()
                                     .filter(AppointmentDetails::isActive)
-                                    .collect(Collectors.toList()));
+                                    .toList());
                     return user;
                 });
     }

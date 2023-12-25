@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class User {
     @Pattern(regexp = "\\d{10}", message = "Phone number must be 10 digits")
     @NotBlank(message = "Phone number cannot be blank")
     @Schema(description = "Phone Number", example = "9876543210")
+    @Indexed(name = "phoneNumber_index", unique = true)
     private String phoneNumber;
 
     @Schema(description = "Age", example = "21")

@@ -1,8 +1,11 @@
 package com.deepak.mongoreactive.controller;
 
+import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
 import com.deepak.mongoreactive.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +32,7 @@ public class AppointmentController {
     @Operation(summary = "GetUserWithActiveAppointmentsByUserId")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User with appointment information retrieved"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> getUserWithActiveAppointmentsByUserId(@PathVariable String userId) {
@@ -40,7 +43,7 @@ public class AppointmentController {
     @Operation(summary = "GetUserWithActiveAppointmentsByPhoneNumber")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User with appointment information retrieved"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(@PathVariable String phoneNumber) {
@@ -51,7 +54,7 @@ public class AppointmentController {
     @Operation(summary = "GetAppointmentsByDate")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments retrieved"),
-            @ApiResponse(responseCode = "400", description = "Invalid date format"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
     public Flux<User> getAppointmentsByDate(
@@ -63,7 +66,7 @@ public class AppointmentController {
     @Operation(summary = "GetAppointmentsByDate and is active/inactive")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments retrieved"),
-            @ApiResponse(responseCode = "400", description = "Invalid date format"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
     public Flux<User> getAppointmentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -75,7 +78,7 @@ public class AppointmentController {
     @Operation(summary = "CancelAppointmentByPhoneNumber")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> cancelAppointmentByPhoneNumber(@PathVariable String phoneNumber,
@@ -87,7 +90,7 @@ public class AppointmentController {
     @Operation(summary = "CancelAppointmentByUserId")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments cancelled"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> cancelAppointmentByUserId(@PathVariable String userId, @RequestBody List<String> appointmentIds) {

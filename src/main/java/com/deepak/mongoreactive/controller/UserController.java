@@ -1,8 +1,11 @@
 package com.deepak.mongoreactive.controller;
 
+import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
 import com.deepak.mongoreactive.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,21 +35,21 @@ public class UserController {
      *
      * @PostMapping - Creates a new User from request body.
      * @GetMapping - Gets all Users.
-     *             @GetMapping("/{id}") - Gets User by ID.
-     *             @PutMapping("/{id}") - Updates User by ID from request body.
-     *             @DeleteMapping("/{id}") - Deletes User by ID.
-     *             @GetMapping("/getByPhoneNumber/{phoneNumber} - Gets User by
-     *             PhoneNumber
+     * @GetMapping("/{id}") - Gets User by ID.
+     * @PutMapping("/{id}") - Updates User by ID from request body.
+     * @DeleteMapping("/{id}") - Deletes User by ID.
+     * @GetMapping("/getByPhoneNumber/{phoneNumber} - Gets User by
+     * PhoneNumber
      */
 
     @PostMapping
     @Operation(summary = "Create a new User")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public Mono<User> createUser(@Valid @RequestBody User userDTO) {
+    public Mono<User> createUser(@Valid @RequestBody Mono<User> userDTO) {
         return this.userService.saveUser(userDTO);
     }
 
@@ -76,6 +79,7 @@ public class UserController {
     @Operation(summary = "Update user by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist"),
             @ApiResponse(responseCode = "409", description = "User update conflict")
     })

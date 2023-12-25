@@ -109,36 +109,38 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    public Mono<User> saveUser(User userDTO) {
-        String userPhoneNumber = userDTO.getPhoneNumber();
-        return this.userRepository.findByPhoneNumber(userPhoneNumber)
-                .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException(
-                        "User with phone number " + userPhoneNumber + " already exists")))
-                .switchIfEmpty(Mono.defer(() -> {
+    public Mono<User> saveUser(Mono<User> userDTO) {
+        return userDTO.flatMap(dto -> {
+            String userPhoneNumber = dto.getPhoneNumber();
+            return this.userRepository.findByPhoneNumber(userPhoneNumber)
+                    .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException(
+                            "User with phone number " + userPhoneNumber + " already exists")))
+                    .switchIfEmpty(Mono.defer(() -> {
 
-                    // Generate custom appointment IDs for each appointment in the user's details
-                    if (userDTO.getAppointmentDetails() != null) {
-                        userDTO.getAppointmentDetails()
-                                .forEach(appointment -> appointment
-                                        .generateCustomAppointmentId(
-                                                userPhoneNumber,
-                                                appointment.getAppointmentForName()));
-                    }
+                        // Generate custom appointment IDs for each appointment in the user's details
+                        if (dto.getAppointmentDetails() != null) {
+                            dto.getAppointmentDetails()
+                                    .forEach(appointment -> appointment
+                                            .generateCustomAppointmentId(
+                                                    userPhoneNumber,
+                                                    appointment.getAppointmentForName()));
+                        }
 
-                    return this.userRepository.save(userDTO)
-                            .doOnSuccess(user -> LOGGER.info(
-                                    "User saved successfully with ID: {}",
-                                    user.getId()))
-                            .doOnError(
-                                    error -> LOGGER.error(
-                                            "Error occurred while saving user: {}",
-                                            error.getMessage()))
-                            .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
-                            .doFinally(signalType -> LOGGER.debug(
-                                    "User saving completed with signal: {}",
-                                    signalType));
-                }))
-                .cast(User.class);
+                        return this.userRepository.save(dto)
+                                .doOnSuccess(user -> LOGGER.info(
+                                        "User saved successfully with ID: {}",
+                                        user.getId()))
+                                .doOnError(
+                                        error -> LOGGER.error(
+                                                "Error occurred while saving user: {}",
+                                                error.getMessage()))
+                                .doOnCancel(() -> LOGGER.warn("User saving cancelled"))
+                                .doFinally(signalType -> LOGGER.debug(
+                                        "User saving completed with signal: {}",
+                                        signalType));
+                    }))
+                    .cast(User.class);
+        });
     }
 
     public Mono<User> updateUser(String id, User userDTO) {
@@ -164,15 +166,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<Long> deleteByName(String name) {
         return this.template.remove(query(where("name").is(name)), User.class)
-                .map(DeleteResult::getDeletedCount);
+                .map(DeleteResult::getDeletedCount)
+                .doOnSuccess(deletedCount -> LOGGER.info("{} user(s) deleted by name: {}", deletedCount, name))
+                .doOnError(error -> LOGGER.error("Error occurred while deleting user(s) by name {}: {}", name, error.getMessage()));
     }
 
     @Override
     public Mono<User> findByPhoneNumber(String phoneNumber) {
         return this.template.findOne(
-                Query.query(Criteria.where("phoneNumber").is(phoneNumber)),
-                User.class);
-
+                        Query.query(Criteria.where("phoneNumber").is(phoneNumber)),
+                        User.class)
+                .doOnNext(user -> {
+                    if (user != null) {
+                        LOGGER.info("User found with phone number {}: {}", phoneNumber, user);
+                    } else {
+                        LOGGER.warn("No user found with phone number: {}", phoneNumber);
+                    }
+                });
     }
 
     @Override
@@ -184,7 +194,8 @@ public class UserServiceImpl implements UserService {
                                     .filter(AppointmentDetails::isActive)
                                     .toList());
                     return user;
-                });
+                })
+                .doOnNext(user -> LOGGER.debug("Retrieved user with active appointments by ID {}: {}", userId, user));
     }
 
     public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(String phoneNumber) {
@@ -195,7 +206,8 @@ public class UserServiceImpl implements UserService {
                                     .filter(AppointmentDetails::isActive)
                                     .toList());
                     return user;
-                });
+                })
+                .doOnNext(user -> LOGGER.debug("Retrieved user with active appointments by phone number {}: {}", phoneNumber, user));
     }
 
     public Mono<User> cancelAppointmentByPhoneNumber(String phoneNumber, List<String> appointmentIds) {
@@ -205,10 +217,11 @@ public class UserServiceImpl implements UserService {
                             .stream()
                             .filter(appointmentDetails -> appointmentIds.contains(
                                     appointmentDetails.getAppointmentId()))
-                            .forEach(appointmentDetails -> appointmentDetails
-                                    .setActive(false));
+                            .forEach(appointmentDetails -> appointmentDetails.setActive(false));
 
-                    return this.userRepository.save(user);
+                    return this.userRepository.save(user)
+                            .doOnSuccess(savedUser -> LOGGER.info("Cancelled appointments for user with phone number {}: {}", phoneNumber, savedUser))
+                            .doOnError(error -> LOGGER.error("Error occurred while cancelling appointments for user with phone number {}: {}", phoneNumber, error.getMessage()));
                 });
     }
 
@@ -220,10 +233,11 @@ public class UserServiceImpl implements UserService {
                             .stream()
                             .filter(appointmentDetails -> appointmentIds.contains(
                                     appointmentDetails.getAppointmentId()))
-                            .forEach(appointmentDetails -> appointmentDetails
-                                    .setActive(false));
+                            .forEach(appointmentDetails -> appointmentDetails.setActive(false));
 
-                    return this.userRepository.save(user);
+                    return this.userRepository.save(user)
+                            .doOnSuccess(savedUser -> LOGGER.info("Cancelled appointments for user with ID {}: {}", userId, savedUser))
+                            .doOnError(error -> LOGGER.error("Error occurred while cancelling appointments for user with ID {}: {}", userId, error.getMessage()));
                 });
     }
 

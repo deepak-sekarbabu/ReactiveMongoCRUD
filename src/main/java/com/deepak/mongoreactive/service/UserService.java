@@ -17,7 +17,7 @@ public interface UserService {
 
     Flux<User> getAppointmentsByDateAndIsActive(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date, boolean active);
 
-    Mono<User> saveUser(User userDtoMono);
+    Mono<User> saveUser(Mono<User> userDtoMono);
 
     Mono<User> updateUser(String id, User userMono);
 

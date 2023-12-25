@@ -1,9 +1,13 @@
 package com.deepak.mongoreactive.models;
 
+import com.deepak.mongoreactive.validations.ValidDOB;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -48,10 +52,9 @@ public class User {
     @Indexed(name = "phoneNumber_index", unique = true)
     private String phoneNumber;
 
-    @Schema(description = "Age", example = "21")
-    @Min(0)
-    @Max(100)
-    private int age;
+    @Schema(description = "DateOfBirth in the format dd-MM-yyyy", example = "dd-MM-yyyy")
+    @ValidDOB
+    private String dateOfBirth;
 
     /**
      * The user's email address

@@ -49,7 +49,7 @@ public class UserServiceUtils {
         existingUser.setLastName(userDTO.getLastName() != null ? userDTO.getLastName() : existingUser.getLastName());
         existingUser.setPhoneNumber(
                 userDTO.getPhoneNumber() != null ? userDTO.getPhoneNumber() : existingUser.getPhoneNumber());
-        existingUser.setAge(userDTO.getAge() != 0 ? userDTO.getAge() : existingUser.getAge());
+        existingUser.setDateOfBirth(userDTO.getDateOfBirth() != null ? userDTO.getDateOfBirth() : existingUser.getDateOfBirth());
         existingUser.setEmail(userDTO.getEmail() != null ? userDTO.getEmail() : existingUser.getEmail());
 
         return Mono.just(existingUser);

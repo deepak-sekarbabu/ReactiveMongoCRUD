@@ -54,8 +54,21 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid date format"),
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
-    public Flux<User> getAppointmentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public Flux<User> getAppointmentsByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return this.userService.getAppointmentsByDate(date);
+    }
+
+    @GetMapping("/byDate/{date}/{active}")
+    @Operation(summary = "GetAppointmentsByDate and is active/inactive")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid date format"),
+            @ApiResponse(responseCode = "404", description = "No appointments found for given date")
+    })
+    public Flux<User> getAppointmentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                            @PathVariable boolean active) {
+        return this.userService.getAppointmentsByDateAndIsActive(date, active);
     }
 
     @PostMapping("/cancel/phone/{phoneNumber}")
@@ -80,6 +93,5 @@ public class AppointmentController {
     public Mono<User> cancelAppointmentByUserId(@PathVariable String userId, @RequestBody List<String> appointmentIds) {
         return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
     }
-
 
 }

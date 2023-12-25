@@ -72,11 +72,43 @@ public class UserServiceImpl implements UserService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
         return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
-                .doOnNext(user -> LOGGER.info("User with appointment on {} retrieved: {}", (Object) date, user))
-                .doOnError(error -> LOGGER.error("Error getting users with appointment on {}: {}", date, error.getMessage()))
+                .doOnNext(user -> LOGGER.info("User with appointment on {} retrieved: {}",
+                        (Object) date, user))
+                .doOnError(error -> LOGGER.error("Error getting users with appointment on {}: {}", date,
+                        error.getMessage()))
                 .doOnCancel(() -> LOGGER.warn("Get users by appointment date {} cancelled", date))
-                .doFinally(signalType -> LOGGER.debug("Get users by appointment date {} completed with signal: {}", date, signalType));
+                .doFinally(signalType -> LOGGER.debug(
+                        "Get users by appointment date {} completed with signal: {}", date,
+                        signalType));
     }
+
+    @Override
+    public Flux<User> getAppointmentsByDateAndIsActive(LocalDate date, boolean active) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
+                .flatMap(user -> {
+                    List<AppointmentDetails> activeAppointments = user.getAppointmentDetails().stream()
+                            .filter(AppointmentDetails -> AppointmentDetails.isActive() == active) // Filtering active appointments
+                            .collect(Collectors.toList());
+
+                    if (!activeAppointments.isEmpty()) {
+                        user.setAppointmentDetails(activeAppointments); // Update user's active appointments
+                        return Mono.just(user);
+                    } else {
+                        return Mono.empty(); // If no active appointments found, return empty
+                    }
+                })
+                .doOnNext(user -> LOGGER.info("Active appointments for user on {} retrieved: {}",
+                        date, user))
+                .doOnError(error -> LOGGER.error("Error getting active appointments on {}: {}",
+                        date, error.getMessage()))
+                .doOnCancel(() -> LOGGER.warn("Get active appointments on {} cancelled", date))
+                .doFinally(signalType -> LOGGER.debug("Get active appointments on {} completed with signal: {}",
+                        date, signalType));
+    }
+
 
     public Mono<User> saveUser(User userDTO) {
         String userPhoneNumber = userDTO.getPhoneNumber();

@@ -4,6 +4,7 @@ import jakarta.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,9 +34,9 @@ public class GlobalHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFound(ResponseStatusException ex) {
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
         LOGGER.error("Requested User Not found: {}", ex.getMessage());
-        return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
+        return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(ex.getMessage());
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

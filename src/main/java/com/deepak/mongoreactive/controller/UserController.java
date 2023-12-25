@@ -4,6 +4,7 @@ import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
 import com.deepak.mongoreactive.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,7 +72,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User retrieved"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserById(@PathVariable String id) {
+    public Mono<User> getUserById(@Parameter(description = "The userId associated with the user's account") @PathVariable String id) {
         return this.userService.getUserById(id);
     }
 
@@ -83,7 +84,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User does not exist"),
             @ApiResponse(responseCode = "409", description = "User update conflict")
     })
-    public Mono<User> updateUser(@PathVariable String id, @RequestBody User updatedUserDTO) {
+    public Mono<User> updateUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id, @RequestBody User updatedUserDTO) {
         return this.userService.updateUser(id, updatedUserDTO);
     }
 
@@ -93,7 +94,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User deleted"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<Void> deleteUser(@PathVariable String id) {
+    public Mono<Void> deleteUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id) {
         return this.userService.deleteUser(id);
     }
 
@@ -103,7 +104,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User retrieved"),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserByPhoneNumber(@PathVariable String phoneNumber) {
+    public Mono<User> getUserByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
         return this.userService.findByPhoneNumber(phoneNumber);
     }
 

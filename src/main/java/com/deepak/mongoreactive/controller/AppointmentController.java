@@ -4,6 +4,7 @@ import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
 import com.deepak.mongoreactive.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +36,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserWithActiveAppointmentsByUserId(@PathVariable String userId) {
+    public Mono<User> getUserWithActiveAppointmentsByUserId(@Parameter(description = "The userId associated with the user's account") @PathVariable String userId) {
         return this.userService.getUserWithActiveAppointmentsByUserId(userId);
     }
 
@@ -46,7 +47,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(@PathVariable String phoneNumber) {
+    public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
         return this.userService.getUserWithActiveAppointmentsByPhoneNumber(phoneNumber);
     }
 
@@ -57,7 +58,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
-    public Flux<User> getAppointmentsByDate(
+    public Flux<User> getAppointmentsByDate(@Parameter(description = "Appointments to be retrieved on a particular date", example = "2023-12-25")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return this.userService.getAppointmentsByDate(date);
     }
@@ -69,8 +70,8 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
-    public Flux<User> getAppointmentsByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                            @PathVariable boolean active) {
+    public Flux<User> getAppointmentsByDate(@Parameter(description = "Appointments to be retrieved on a particular date", example = "2023-12-25") @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                            @Parameter(description = "Fetch an active/inactive appointment on the mentioned date", example = "true/false") @PathVariable boolean active) {
         return this.userService.getAppointmentsByDateAndIsActive(date, active);
     }
 
@@ -81,8 +82,8 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> cancelAppointmentByPhoneNumber(@PathVariable String phoneNumber,
-                                                     @RequestBody List<String> appointmentIds) {
+    public Mono<User> cancelAppointmentByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber,
+                                                     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "List of appointment IDs to be cancelled") @RequestBody List<String> appointmentIds) {
         return this.userService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentIds);
     }
 
@@ -93,7 +94,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
-    public Mono<User> cancelAppointmentByUserId(@PathVariable String userId, @RequestBody List<String> appointmentIds) {
+    public Mono<User> cancelAppointmentByUserId(@Parameter(description = "Users Id") @PathVariable String userId, @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "List of appointment IDs to be cancelled") @RequestBody List<String> appointmentIds) {
         return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
     }
 

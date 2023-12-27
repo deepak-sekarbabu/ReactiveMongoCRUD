@@ -77,15 +77,15 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update user by id")
+    @Operation(summary = "Update user information by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated"),
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User does not exist"),
             @ApiResponse(responseCode = "409", description = "User update conflict")
     })
-    public Mono<User> updateUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id, @RequestBody User updatedUserDTO) {
-        return this.userService.updateUser(id, updatedUserDTO);
+    public Mono<User> updateUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id, @RequestBody Mono<User> updatedUserDTO) {
+        return this.userService.updateUserInformation(id, updatedUserDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -106,6 +106,16 @@ public class UserController {
     })
     public Mono<User> getUserByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
         return this.userService.findByPhoneNumber(phoneNumber);
+    }
+
+    @GetMapping("/getUserId/{phoneNumber}")
+    @Operation(summary = "Get userId by phoneNumber")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User Id retrieved"),
+            @ApiResponse(responseCode = "404", description = "User does not exist")
+    })
+    public Mono<String> getUserIdByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
+        return this.userService.findUserIdByPhoneNumber(phoneNumber);
     }
 
 }

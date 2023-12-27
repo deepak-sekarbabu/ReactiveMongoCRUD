@@ -1,5 +1,6 @@
 package com.deepak.mongoreactive.controller;
 
+import com.deepak.mongoreactive.models.AppointmentDetails;
 import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
 import com.deepak.mongoreactive.service.UserService;
@@ -96,6 +97,29 @@ public class AppointmentController {
     })
     public Mono<User> cancelAppointmentByUserId(@Parameter(description = "Users Id") @PathVariable String userId, @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "List of appointment IDs to be cancelled") @RequestBody List<String> appointmentIds) {
         return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
+    }
+
+    @PostMapping("/user/{userId}")
+    @Operation(summary = "Create new Appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User does not exist")
+    })
+    public Mono<List<AppointmentDetails>> createAppointment(@Parameter(description = "Users Id") @PathVariable String userId, @RequestBody List<AppointmentDetails> appointmentDetails) {
+        return this.userService.createAppointmentsByUserId(userId, appointmentDetails);
+    }
+
+
+    @PostMapping("/user/{userId}")
+    @Operation(summary = "Update existing Appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Appointments updated"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User does not exist")
+    })
+    public Mono<List<AppointmentDetails>> updateAppointment(@Parameter(description = "Users Id") @PathVariable String userId, @RequestBody List<AppointmentDetails> appointmentDetails) {
+        return this.userService.createAppointmentsByUserId(userId, appointmentDetails);
     }
 
 }

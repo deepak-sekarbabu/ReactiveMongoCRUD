@@ -88,12 +88,16 @@ public class UserServiceImpl implements UserService {
 
         return this.userRepository.findByAppointmentDetailsAppointmentDateBetween(startOfDay, endOfDay)
                 .flatMap(user -> {
-                    List<AppointmentDetails> activeAppointments = user.getAppointmentDetails().stream()
-                            .filter(appointmentDetails -> appointmentDetails.isActive() == active) // Filtering active appointments
+                    List<AppointmentDetails> activeAppointments = user.getAppointmentDetails()
+                            .stream()
+                            .filter(appointmentDetails -> appointmentDetails
+                                    .isActive() == active) // Filtering active
+                            // appointments
                             .toList();
 
                     if (!activeAppointments.isEmpty()) {
-                        user.setAppointmentDetails(activeAppointments); // Update user's active appointments
+                        user.setAppointmentDetails(activeAppointments); // Update user's active
+                        // appointments
                         return Mono.just(user);
                     } else {
                         return Mono.empty(); // If no active appointments found, return empty
@@ -104,20 +108,22 @@ public class UserServiceImpl implements UserService {
                 .doOnError(error -> LOGGER.error("Error getting active appointments on {}: {}",
                         date, error.getMessage()))
                 .doOnCancel(() -> LOGGER.warn("Get active appointments on {} cancelled", date))
-                .doFinally(signalType -> LOGGER.debug("Get active appointments on {} completed with signal: {}",
+                .doFinally(signalType -> LOGGER.debug(
+                        "Get active appointments on {} completed with signal: {}",
                         date, signalType));
     }
-
 
     public Mono<User> saveUser(Mono<User> userDTO) {
         return userDTO.flatMap(dto -> {
             String userPhoneNumber = dto.getPhoneNumber();
             return this.userRepository.findByPhoneNumber(userPhoneNumber)
                     .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException(
-                            "User with phone number " + userPhoneNumber + " already exists")))
+                            "User with phone number " + userPhoneNumber
+                                    + " already exists")))
                     .switchIfEmpty(Mono.defer(() -> {
 
-                        // Generate custom appointment IDs for each appointment in the user's details
+                        // Generate custom appointment IDs for each appointment in the user's
+                        // details
                         if (dto.getAppointmentDetails() != null) {
                             dto.getAppointmentDetails()
                                     .forEach(appointment -> appointment
@@ -143,11 +149,23 @@ public class UserServiceImpl implements UserService {
         });
     }
 
-    public Mono<User> updateUser(String id, User userDTO) {
-        return this.userRepository.findByPhoneNumber(userDTO.getPhoneNumber())
-                .flatMap(existingUser -> this.userServiceUtils.handleExistingUser(id, userDTO,
-                        existingUser))
-                .switchIfEmpty(this.userServiceUtils.updateUserAndSave(id, userDTO));
+    public Mono<User> updateUserInformation(String id, Mono<User> userDTOMono) {
+        return userDTOMono.flatMap(userDTO -> this.userRepository.findById(id)
+                .flatMap(existingUser -> {
+                    existingUser.setFirstName(userDTO.getFirstName());
+                    existingUser.setLastName(userDTO.getLastName());
+                    existingUser.setDateOfBirth(userDTO.getDateOfBirth());
+                    existingUser.setEmail(userDTO.getEmail());
+                    existingUser.setPhoneNumber(userDTO.getPhoneNumber());
+
+                    return this.userRepository.save(existingUser)
+                            .doOnSuccess(user -> LOGGER.info(
+                                    "User information updated successfully for user with ID: {}",
+                                    id))
+                            .doOnError(error -> LOGGER.error(
+                                    "Error occurred while updating user information for user with ID {}: {}",
+                                    id, error.getMessage()));
+                }));
     }
 
     @Override
@@ -167,8 +185,10 @@ public class UserServiceImpl implements UserService {
     public Mono<Long> deleteByName(String name) {
         return this.template.remove(query(where("name").is(name)), User.class)
                 .map(DeleteResult::getDeletedCount)
-                .doOnSuccess(deletedCount -> LOGGER.info("{} user(s) deleted by name: {}", deletedCount, name))
-                .doOnError(error -> LOGGER.error("Error occurred while deleting user(s) by name {}: {}", name, error.getMessage()));
+                .doOnSuccess(deletedCount -> LOGGER.info("{} user(s) deleted by name: {}", deletedCount,
+                        name))
+                .doOnError(error -> LOGGER.error("Error occurred while deleting user(s) by name {}: {}",
+                        name, error.getMessage()));
     }
 
     @Override
@@ -186,6 +206,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Mono<String> findUserIdByPhoneNumber(String phoneNumber) {
+        return this.userRepository.findByPhoneNumber(phoneNumber)
+                .map(User::getId)
+                .doOnNext(userId -> {
+                    if (userId != null) {
+                        LOGGER.info("User ID {} found for phone number {}", userId,
+                                phoneNumber);
+                    } else {
+                        LOGGER.warn("No user ID found for phone number {}", phoneNumber);
+                    }
+                });
+    }
+
+    @Override
     public Mono<User> getUserWithActiveAppointmentsByUserId(String userId) {
         return this.userRepository.findById(userId)
                 .map(user -> {
@@ -195,7 +229,8 @@ public class UserServiceImpl implements UserService {
                                     .toList());
                     return user;
                 })
-                .doOnNext(user -> LOGGER.debug("Retrieved user with active appointments by ID {}: {}", userId, user));
+                .doOnNext(user -> LOGGER.debug("Retrieved user with active appointments by ID {}: {}",
+                        userId, user));
     }
 
     public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(String phoneNumber) {
@@ -207,7 +242,9 @@ public class UserServiceImpl implements UserService {
                                     .toList());
                     return user;
                 })
-                .doOnNext(user -> LOGGER.debug("Retrieved user with active appointments by phone number {}: {}", phoneNumber, user));
+                .doOnNext(user -> LOGGER.debug(
+                        "Retrieved user with active appointments by phone number {}: {}",
+                        phoneNumber, user));
     }
 
     public Mono<User> cancelAppointmentByPhoneNumber(String phoneNumber, List<String> appointmentIds) {
@@ -217,11 +254,16 @@ public class UserServiceImpl implements UserService {
                             .stream()
                             .filter(appointmentDetails -> appointmentIds.contains(
                                     appointmentDetails.getAppointmentId()))
-                            .forEach(appointmentDetails -> appointmentDetails.setActive(false));
+                            .forEach(appointmentDetails -> appointmentDetails
+                                    .setActive(false));
 
                     return this.userRepository.save(user)
-                            .doOnSuccess(savedUser -> LOGGER.info("Cancelled appointments for user with phone number {}: {}", phoneNumber, savedUser))
-                            .doOnError(error -> LOGGER.error("Error occurred while cancelling appointments for user with phone number {}: {}", phoneNumber, error.getMessage()));
+                            .doOnSuccess(savedUser -> LOGGER.info(
+                                    "Cancelled appointments for user with phone number {}: {}",
+                                    phoneNumber, savedUser))
+                            .doOnError(error -> LOGGER.error(
+                                    "Error occurred while cancelling appointments for user with phone number {}: {}",
+                                    phoneNumber, error.getMessage()));
                 });
     }
 
@@ -233,12 +275,74 @@ public class UserServiceImpl implements UserService {
                             .stream()
                             .filter(appointmentDetails -> appointmentIds.contains(
                                     appointmentDetails.getAppointmentId()))
-                            .forEach(appointmentDetails -> appointmentDetails.setActive(false));
+                            .forEach(appointmentDetails -> appointmentDetails
+                                    .setActive(false));
 
                     return this.userRepository.save(user)
-                            .doOnSuccess(savedUser -> LOGGER.info("Cancelled appointments for user with ID {}: {}", userId, savedUser))
-                            .doOnError(error -> LOGGER.error("Error occurred while cancelling appointments for user with ID {}: {}", userId, error.getMessage()));
+                            .doOnSuccess(savedUser -> LOGGER.info(
+                                    "Cancelled appointments for user with ID {}: {}",
+                                    userId, savedUser))
+                            .doOnError(error -> LOGGER.error(
+                                    "Error occurred while cancelling appointments for user with ID {}: {}",
+                                    userId, error.getMessage()));
                 });
     }
+
+
+    @Override
+    public Mono<User> createAppointmentByUserId(String userId, List<AppointmentDetails> appointmentDetails) {
+        return this.userRepository.findById(userId)
+                .flatMap(user -> {
+                    String phoneNumber = user.getPhoneNumber();
+
+                    // Generate custom appointment IDs for each appointment detail
+                    appointmentDetails.forEach(
+                            ad -> ad.generateCustomAppointmentId(phoneNumber, ad.getAppointmentForName())
+                    );
+
+                    // Add new appointment details to the user
+                    user.getAppointmentDetails().addAll(appointmentDetails);
+
+                    // Save the user with updated appointment details
+                    return this.userRepository.save(user)
+                            .doOnSuccess(savedUser -> LOGGER.info(
+                                    "Added appointments for user with ID {}: {}", userId, savedUser))
+                            .doOnError(error -> LOGGER.error(
+                                    "Error occurred while adding appointments for user with ID {}: {}",
+                                    userId, error.getMessage()))
+                            .thenReturn(user); // Return the updated user object
+                });
+    }
+
+    @Override
+    public Mono<List<AppointmentDetails>> createAppointmentsByUserId(String userId, List<AppointmentDetails> appointmentDetails) {
+        return this.userRepository.findById(userId)
+                .flatMap(user -> {
+                    String phoneNumber = user.getPhoneNumber();
+
+                    // Generate custom appointment IDs for each appointment detail
+                    appointmentDetails.forEach(
+                            ad -> ad.generateCustomAppointmentId(phoneNumber, ad.getAppointmentForName())
+                    );
+
+                    // Add new appointment details to the user
+                    user.getAppointmentDetails().addAll(appointmentDetails);
+
+                    // Save the user with updated appointment details
+                    return this.userRepository.save(user)
+                            .doOnSuccess(savedUser -> LOGGER.info(
+                                    "Added appointments for user with ID {}: {}", userId, savedUser))
+                            .doOnError(error -> LOGGER.error(
+                                    "Error occurred while adding appointments for user with ID {}: {}",
+                                    userId, error.getMessage()))
+                            .thenReturn(appointmentDetails); // Return the newly created appointment details
+                });
+    }
+
+    @Override
+    public Mono<List<AppointmentDetails>> updateAppointmentsByUserId(String userId, List<AppointmentDetails> appointmentDetails) {
+        return null;
+    }
+
 
 }

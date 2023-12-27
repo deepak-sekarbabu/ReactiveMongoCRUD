@@ -1,0 +1,1142 @@
+{
+  "info": {
+    "_postman_id": "ff0ca8c9-34d7-4163-b792-ea534e31b770",
+    "name": "Reactive Mongo CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "11484799"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User with Single Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Fixed response status code test\r",
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed Content-Type header test\r",
+                  "pm.test(\"Content-Type header is application/json\", function () {\r",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed response structure test\r",
+                  "pm.test(\"Response has the required fields - id, firstName, lastName, age, and email\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    \r",
+                  "    pm.expect(responseData).to.be.an('object');\r",
+                  "    pm.expect(responseData).to.include.all.keys('id', 'firstName', 'lastName', 'phoneNumber', 'dateOfBirth', 'email', 'appointmentDetails');\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed email format test\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed age format test\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.dateOfBirth).to.be.a('string').and.to.not.be.empty;\r",
+                  "});\r",
+                  "\r",
+                  "var userId = pm.response.json().id;\r",
+                  "pm.collectionVariables.set(\"userId\", userId);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the appointment date with the current timestamp in ISO format\r",
+                  "const currentDate = new Date().toISOString();\r",
+                  "pm.variables.set(\"currentTimestamp\", currentDate);\r",
+                  "\r",
+                  "function getRandomInt(min, max) {\r",
+                  "    return Math.floor(Math.random() * (max - min + 1)) + min;\r",
+                  "}\r",
+                  "\r",
+                  "// Generate a random 10-digit phone number\r",
+                  "const randomPhoneNumber = Math.floor(Math.random() * 9000000000) + 1000000000;\r",
+                  "pm.variables.set(\"randomPhoneNumber\", randomPhoneNumber.toString());\r",
+                  "\r",
+                  "// Generate a random string for email\r",
+                  "function generateRandomEmail() {\r",
+                  "    let chars = 'abcdefghijklmnopqrstuvwxyz1234567890';\r",
+                  "    let email = '';\r",
+                  "    for (let i = 0; i < 10; i++) {\r",
+                  "        email += chars.charAt(Math.floor(Math.random() * chars.length));\r",
+                  "    }\r",
+                  "    email += '@example.com'; // You can change 'example.com' to your desired domain\r",
+                  "    return email;\r",
+                  "}\r",
+                  "\r",
+                  "// Set the generated email as a variable\r",
+                  "pm.variables.set('randomEmail', generateRandomEmail());\r",
+                  "\r",
+                  "// Generate a random age between 18 and 70\r",
+                  "let randomAge = getRandomInt(18, 70);\r",
+                  "\r",
+                  "// Set the generated age as a variable\r",
+                  "pm.variables.set('randomAge', randomAge);\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Deepak\",\r\n    \"lastName\": \"Sekarbabu\",\r\n    \"phoneNumber\": \"{{randomPhoneNumber}}\",\r\n    \"dateOfBirth\": \"20-01-1991\",\r\n    \"email\": \"{{randomEmail}}\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"Deepak\",\r\n            \"appointmentForAge\": \"{{randomAge}}\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"{{currentTimestamp}}\",\r\n            \"doctorName\": \"Dr. Smith\",\r\n            \"clinicId\": \"Deepak Clinic\",\r\n            \"active\": true\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Information",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Fixed response status code test\r",
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed Content-Type header test\r",
+                  "pm.test(\"Content-Type header is application/json\", function () {\r",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed response structure test\r",
+                  "pm.test(\"Response has the required fields - id, firstName, lastName, age, and email\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    \r",
+                  "    pm.expect(responseData).to.be.an('object');\r",
+                  "    pm.expect(responseData).to.include.all.keys('id', 'firstName', 'lastName', 'phoneNumber', 'dateOfBirth', 'email', 'appointmentDetails');\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed email format test\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");\r",
+                  "});\r",
+                  "\r",
+                  "// Fixed age format test\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.dateOfBirth).to.be.a('string').and.to.not.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the appointment date with the current timestamp in ISO format\r",
+                  "const currentDate = new Date().toISOString();\r",
+                  "pm.variables.set(\"currentTimestamp\", currentDate);\r",
+                  "\r",
+                  "function getRandomInt(min, max) {\r",
+                  "    return Math.floor(Math.random() * (max - min + 1)) + min;\r",
+                  "}\r",
+                  "\r",
+                  "// Generate a random 10-digit phone number\r",
+                  "const randomPhoneNumber = Math.floor(Math.random() * 9000000000) + 1000000000;\r",
+                  "pm.variables.set(\"randomPhoneNumber\", randomPhoneNumber.toString());\r",
+                  "\r",
+                  "// Generate a random string for email\r",
+                  "function generateRandomEmail() {\r",
+                  "    let chars = 'abcdefghijklmnopqrstuvwxyz1234567890';\r",
+                  "    let email = '';\r",
+                  "    for (let i = 0; i < 10; i++) {\r",
+                  "        email += chars.charAt(Math.floor(Math.random() * chars.length));\r",
+                  "    }\r",
+                  "    email += '@example.com'; // You can change 'example.com' to your desired domain\r",
+                  "    return email;\r",
+                  "}\r",
+                  "\r",
+                  "// Set the generated email as a variable\r",
+                  "pm.variables.set('randomEmail', generateRandomEmail());\r",
+                  "\r",
+                  "// Generate a random age between 18 and 70\r",
+                  "let randomAge = getRandomInt(18, 70);\r",
+                  "\r",
+                  "// Set the generated age as a variable\r",
+                  "pm.variables.set('randomAge', randomAge);\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Deepak\",\r\n    \"lastName\": \"Sekarbabu\",\r\n    \"phoneNumber\": \"{{randomPhoneNumber}}\",\r\n    \"dateOfBirth\": \"20-01-1991\",\r\n    \"email\": \"{{randomEmail}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "\r",
+                  "  pm.expect(responseData).to.be.an('array');\r",
+                  "  responseData.forEach(function(user) {\r",
+                  "    pm.expect(user.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('array');\r",
+                  "  responseData.forEach(function(user) {\r",
+                  "    pm.expect(user.age).to.be.a('number');\r",
+                  "    pm.expect(user.age).to.be.at.least(0);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Content-Type is application/json\", function () {\r",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users Limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "\r",
+                  "  pm.expect(responseData).to.be.an('array');\r",
+                  "  responseData.forEach(function(user) {\r",
+                  "    pm.expect(user.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('array');\r",
+                  "  responseData.forEach(function(user) {\r",
+                  "    pm.expect(user.age).to.be.a('number');\r",
+                  "    pm.expect(user.age).to.be.at.least(0);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Content-Type is application/json\", function () {\r",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users?limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by PhoneNumber",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "\r",
+                  "  pm.expect(responseData.appointmentDetails).to.be.an('array');\r",
+                  "  responseData.appointmentDetails.forEach(function(appointment) {\r",
+                  "    pm.expect(appointment.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.appointmentDetails).to.be.an('array');\r",
+                  "  responseData.appointmentDetails.forEach(function(appointment) {\r",
+                  "    pm.expect(appointment.age).to.be.a('number');\r",
+                  "    pm.expect(appointment.age).to.be.at.least(0);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Content-Type is application/json\", function () {\r",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/getByPhoneNumber/{{phoneNumber}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "getByPhoneNumber",
+                "{{phoneNumber}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User ID by PhoneNumber",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "  pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "\r",
+                  "  pm.expect(responseData.appointmentDetails).to.be.an('array');\r",
+                  "  responseData.appointmentDetails.forEach(function(appointment) {\r",
+                  "    pm.expect(appointment.email).to.be.a('string').and.to.match(/^.+@.+\\..+$/);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData.appointmentDetails).to.be.an('array');\r",
+                  "  responseData.appointmentDetails.forEach(function(appointment) {\r",
+                  "    pm.expect(appointment.age).to.be.a('number');\r",
+                  "    pm.expect(appointment.age).to.be.at.least(0);\r",
+                  "  });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Content-Type is application/json\", function () {\r",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/getUserId/{{phoneNumber}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "getUserId",
+                "{{phoneNumber}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User update Existing appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData).to.have.property('id');\r",
+                  "  pm.expect(responseData).to.have.property('firstName');\r",
+                  "  pm.expect(responseData).to.have.property('age');\r",
+                  "  pm.expect(responseData).to.have.property('email');\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData.email).to.match(/\\S+@\\S+\\.\\S+/);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    \r",
+                  "    pm.expect(responseData).to.be.an('object');\r",
+                  "    pm.expect(responseData.age).to.be.a('number');\r",
+                  "    pm.expect(responseData.age).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Name is a non-empty string\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData.firstName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the appointment date with the current timestamp in ISO format\r",
+                  "const currentDate = new Date().toISOString();\r",
+                  "pm.variables.set(\"currentTimestamp\", currentDate);\r",
+                  "\r",
+                  "\r",
+                  "// Generate a random 10-digit phone number\r",
+                  "const randomPhoneNumber = Math.floor(Math.random() * 9000000000) + 1000000000;\r",
+                  "pm.variables.set(\"randomPhoneNumber\", randomPhoneNumber.toString());\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Deepak\",\r\n    \"lastName\": \"Sekarbabu\",\r\n    \"phoneNumber\": \"{{randomPhoneNumber}}\",\r\n    \"dateOfBirth\": \"20-01-1991\",\r\n    \"email\": \"deepak@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentId\": \"12345678901_2023-12-23T23:29:43.985486400\",\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"ddd\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"{{currentTimestamp}}\",\r\n            \"doctorName\": \"Dr. Smith\",\r\n            \"clinicId\": \"Deepak Clinic\",\r\n            \"active\": false\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User With Multiple Appointments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Store the appointmentIds in an array\r",
+                  "// Stores the appointmentId in a collection variable\r",
+                  "var appointmentId1 = pm.response.json().appointmentDetails[0].appointmentId;\r",
+                  "pm.collectionVariables.set(\"appointmentId1\", appointmentId1);\r",
+                  "\r",
+                  "var appointmentId2 = pm.response.json().appointmentDetails[1].appointmentId;\r",
+                  "pm.collectionVariables.set(\"appointmentId2\", appointmentId2);\r",
+                  "\r",
+                  "var phoneNumber = pm.response.json().phoneNumber;\r",
+                  "pm.collectionVariables.set(\"phoneNumber\", phoneNumber);\r",
+                  "\r",
+                  "// Stores the userId in a collection variable\r",
+                  "var userId = pm.response.json().id;\r",
+                  "pm.collectionVariables.set(\"userId\", userId);\r",
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    \r",
+                  "    pm.expect(responseData.email).to.be.a('string').and.to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/, \"Email should be in a valid format\");\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Appointment details array is present and has expected number of elements\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(responseData).to.be.an('object');\r",
+                  "    pm.expect(responseData.appointmentDetails).to.exist;\r",
+                  "    pm.expect(responseData.appointmentDetails).to.be.an('array');\r",
+                  "    pm.expect(responseData.appointmentDetails).to.have.lengthOf.at.least(1);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Id is a non-empty string\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    pm.expect(responseData.id).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Id should not be empty\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    pm.expect(responseData.age).to.be.a('number').and.to.satisfy((age) => age >= 0, \"Age should be a non-negative integer\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the appointment date with the current timestamp in ISO format\r",
+                  "const currentDate = new Date().toISOString();\r",
+                  "pm.variables.set(\"currentTimestamp\", currentDate);\r",
+                  "\r",
+                  "\r",
+                  "// Generate a random 10-digit phone number\r",
+                  "const randomPhoneNumber = Math.floor(Math.random() * 9000000000) + 1000000000;\r",
+                  "pm.variables.set(\"randomPhoneNumber\", randomPhoneNumber.toString());\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Deepak\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"{{randomPhoneNumber}}\",\r\n    \"dateOfBirth\": \"20-01-1991\",\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"John Doe\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"{{currentTimestamp}}\",\r\n            \"doctorName\": \"Dr. Smith\",\r\n            \"clinicId\": \"Deepak Clinic\",\r\n            \"active\": true\r\n        },\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"KIDS\",\r\n            \"appointmentForName\": \"Philip Doe\",\r\n            \"appointmentForAge\": \"10\",\r\n            \"symptom\": \"FEVER\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"{{currentTimestamp}}\",\r\n            \"doctorName\": \"Dr. Phiip\",\r\n            \"clinicId\": \"Deepak Clinic\",\r\n            \"active\": true\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Add New Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "    pm.expect(pm.response.code).to.equal(200);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Response has the required fields - id, name, age, and email\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData).to.have.property('id');\r",
+                  "  pm.expect(responseData).to.have.property('firstName');\r",
+                  "  pm.expect(responseData).to.have.property('age');\r",
+                  "  pm.expect(responseData).to.have.property('email');\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Email is in a valid format\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData.email).to.match(/\\S+@\\S+\\.\\S+/);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Age is a non-negative integer\", function () {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    \r",
+                  "    pm.expect(responseData).to.be.an('object');\r",
+                  "    pm.expect(responseData.age).to.be.a('number');\r",
+                  "    pm.expect(responseData.age).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Name is a non-empty string\", function () {\r",
+                  "  const responseData = pm.response.json();\r",
+                  "  \r",
+                  "  pm.expect(responseData).to.be.an('object');\r",
+                  "  pm.expect(responseData.firstName).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var appointmentIds = \r",
+                  "pm.collectionVariables.get(\"appointmentIds\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"id\": \"{{userId}}\",\r\n    \"firstName\": \"Deepak\",\r\n    \"lastName\": \"Doe\",\r\n    \"phoneNumber\": \"{{phoneNumber}}\",\r\n    \"dateOfBirth\": \"20-01-1991\",\r\n    \"email\": \"johndoe@example.com\",\r\n    \"appointmentDetails\": [\r\n        {\r\n            \"appointmentId\": \"1927646361_John Doe_2023-12-25T15:47:58.243746500\",\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"SELF\",\r\n            \"appointmentForName\": \"John Doe\",\r\n            \"appointmentForAge\": \"30\",\r\n            \"symptom\": \"HEADACHE\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Smith\",\r\n            \"clinicId\": \"Deepak Clinic\"\r\n        },\r\n        {\r\n            \"appointmentId\": \"1927646361_Philip Doe_2023-12-25T15:47:58.243746500\",\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"KIDS\",\r\n            \"appointmentForName\": \"Philip Doe\",\r\n            \"appointmentForAge\": \"10\",\r\n            \"symptom\": \"FEVER\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Phiip\",\r\n            \"clinicId\": \"Deepak Clinic\"\r\n        },\r\n        {\r\n            \"appointmentType\": \"GENERAL_CHECKUP\",\r\n            \"appointmentFor\": \"KIDS\",\r\n            \"appointmentForName\": \"Philip Doe\",\r\n            \"appointmentForAge\": \"10\",\r\n            \"symptom\": \"FEVER\",\r\n            \"otherSymptoms\": \"None\",\r\n            \"appointmentDate\": \"2023-12-20T10:00:00\",\r\n            \"doctorName\": \"Dr. Phiip\",\r\n            \"clinicId\": \"Deepak Clinic\"\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Response status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/users/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "item": [
+        {
+          "name": "getUserWithActiveAppointmentsUsingUserId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments/active/user/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "active",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAppointmentByDate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments/byDate/2023-12-25",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "byDate",
+                "2023-12-25"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAppointmentByDateAndActive",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/appointments/byDate/2023-12-25/true",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "byDate",
+                "2023-12-25",
+                "true"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getUserWithActiveAppointmentsUsingPhoneNumber",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080//appointments/active/phone/{{phoneNumber}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "",
+                "appointments",
+                "active",
+                "phone",
+                "{{phoneNumber}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cancel by phonenumber",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    \"{{appointmentId}}\"\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/appointments/cancel/phone/{{phoneNumber}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "cancel",
+                "phone",
+                "{{phoneNumber}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cancel by userId",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    \"{{appointmentId}}\"\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/appointments/cancel/user/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "cancel",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create AppointmentByUserID",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the appointment date with the current timestamp in ISO format\r",
+                  "const currentDate = new Date().toISOString();\r",
+                  "pm.variables.set(\"currentTimestamp\", currentDate);\r",
+                  "function getRandomInt(min, max) {\r",
+                  "    return Math.floor(Math.random() * (max - min + 1)) + min;\r",
+                  "}\r",
+                  "\r",
+                  "let randomAge = getRandomInt(18, 70);\r",
+                  "\r",
+                  "// Set the generated age as a variable\r",
+                  "pm.variables.set('randomAge', randomAge);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    {\r\n        \"appointmentType\": \"GENERAL_CHECKUP\",\r\n        \"appointmentFor\": \"SELF\",\r\n        \"appointmentForName\": \"Deepak\",\r\n        \"appointmentForAge\": \"{{randomAge}}\",\r\n        \"symptom\": \"HEADACHE\",\r\n        \"otherSymptoms\": \"None\",\r\n        \"appointmentDate\": \"{{currentTimestamp}}\",\r\n        \"doctorName\": \"Dr. Smith\",\r\n        \"clinicId\": \"Deepak Clinic\",\r\n        \"active\": true\r\n    },\r\n    {\r\n        \"appointmentType\": \"GENERAL_CHECKUP\",\r\n        \"appointmentFor\": \"SELF\",\r\n        \"appointmentForName\": \"DDD\",\r\n        \"appointmentForAge\": \"{{randomAge}}\",\r\n        \"symptom\": \"HEADACHE\",\r\n        \"otherSymptoms\": \"None\",\r\n        \"appointmentDate\": \"{{currentTimestamp}}\",\r\n        \"doctorName\": \"Dr. Smith\",\r\n        \"clinicId\": \"Deepak Clinic\",\r\n        \"active\": true\r\n    }\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/appointments/user/{{userId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "appointments",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
+    },
+    {
+      "key": "appointmentIds",
+      "value": ""
+    },
+    {
+      "key": "appointmentId1",
+      "value": ""
+    },
+    {
+      "key": "appointmentId2",
+      "value": ""
+    },
+    {
+      "key": "phoneNumber",
+      "value": ""
+    }
+  ]
+}

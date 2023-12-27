@@ -3,7 +3,7 @@ package com.deepak.mongoreactive.controller;
 import com.deepak.mongoreactive.models.AppointmentDetails;
 import com.deepak.mongoreactive.models.ErrorResponse;
 import com.deepak.mongoreactive.models.User;
-import com.deepak.mongoreactive.service.UserService;
+import com.deepak.mongoreactive.service.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,10 +24,10 @@ import java.util.List;
 @Tag(name = "Appointments", description = "Handles CRUD operations for Appointments")
 public class AppointmentController {
 
-    private final UserService userService;
+    private final AppointmentService appointmentService;
 
-    public AppointmentController(UserService userService) {
-        this.userService = userService;
+    public AppointmentController(AppointmentService appointmentService) {
+        this.appointmentService = appointmentService;
     }
 
     @GetMapping("/active/user/{userId}")
@@ -38,7 +38,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> getUserWithActiveAppointmentsByUserId(@Parameter(description = "The userId associated with the user's account") @PathVariable String userId) {
-        return this.userService.getUserWithActiveAppointmentsByUserId(userId);
+        return this.appointmentService.getUserWithActiveAppointmentsByUserId(userId);
     }
 
     @GetMapping("/active/phone/{phoneNumber}")
@@ -49,7 +49,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> getUserWithActiveAppointmentsByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
-        return this.userService.getUserWithActiveAppointmentsByPhoneNumber(phoneNumber);
+        return this.appointmentService.getUserWithActiveAppointmentsByPhoneNumber(phoneNumber);
     }
 
     @GetMapping("/byDate/{date}")
@@ -60,8 +60,8 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "No appointments found for given date")
     })
     public Flux<User> getAppointmentsByDate(@Parameter(description = "Appointments to be retrieved on a particular date", example = "2023-12-25")
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return this.userService.getAppointmentsByDate(date);
+                                                @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return this.appointmentService.getAppointmentsByDate(date);
     }
 
     @GetMapping("/byDate/{date}/{active}")
@@ -73,7 +73,7 @@ public class AppointmentController {
     })
     public Flux<User> getAppointmentsByDate(@Parameter(description = "Appointments to be retrieved on a particular date", example = "2023-12-25") @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                             @Parameter(description = "Fetch an active/inactive appointment on the mentioned date", example = "true/false") @PathVariable boolean active) {
-        return this.userService.getAppointmentsByDateAndIsActive(date, active);
+        return this.appointmentService.getAppointmentsByDateAndIsActive(date, active);
     }
 
     @PostMapping("/cancel/phone/{phoneNumber}")
@@ -85,7 +85,7 @@ public class AppointmentController {
     })
     public Mono<User> cancelAppointmentByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber,
                                                      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "List of appointment IDs to be cancelled") @RequestBody List<String> appointmentIds) {
-        return this.userService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentIds);
+        return this.appointmentService.cancelAppointmentByPhoneNumber(phoneNumber, appointmentIds);
     }
 
     @PostMapping("/cancel/user/{userId}")
@@ -96,7 +96,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<User> cancelAppointmentByUserId(@Parameter(description = "Users Id") @PathVariable String userId, @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "List of appointment IDs to be cancelled") @RequestBody List<String> appointmentIds) {
-        return this.userService.cancelAppointmentByUserId(userId, appointmentIds);
+        return this.appointmentService.cancelAppointmentByUserId(userId, appointmentIds);
     }
 
     @PostMapping("/user/{userId}")
@@ -107,11 +107,11 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<List<AppointmentDetails>> createAppointment(@Parameter(description = "Users Id") @PathVariable String userId, @RequestBody List<AppointmentDetails> appointmentDetails) {
-        return this.userService.createAppointmentsByUserId(userId, appointmentDetails);
+        return this.appointmentService.createAppointmentsByUserId(userId, appointmentDetails);
     }
 
 
-    @PostMapping("/user/{userId}")
+    @PutMapping("/user/{userId}")
     @Operation(summary = "Update existing Appointment")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Appointments updated"),
@@ -119,7 +119,7 @@ public class AppointmentController {
             @ApiResponse(responseCode = "404", description = "User does not exist")
     })
     public Mono<List<AppointmentDetails>> updateAppointment(@Parameter(description = "Users Id") @PathVariable String userId, @RequestBody List<AppointmentDetails> appointmentDetails) {
-        return this.userService.createAppointmentsByUserId(userId, appointmentDetails);
+        return this.appointmentService.updateAppointmentsByUserId(userId, appointmentDetails);
     }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.List;
 
 @Document(collection = "user")
@@ -65,5 +66,17 @@ public class User {
     @Schema(description = "AppointmentDetails in Array")
     private List<AppointmentDetails> appointmentDetails;
 
+    public User withoutAppointmentDetails() {
+        return User.builder()
+                .id(this.id)
+                .firstName(this.firstName)
+                .lastName(this.lastName)
+                .phoneNumber(this.phoneNumber)
+                .dateOfBirth(this.dateOfBirth)
+                .email(this.email)
+                .appointmentDetails(Collections.emptyList())
+                // Omit appointmentDetails field
+                .build();
+    }
 
 }

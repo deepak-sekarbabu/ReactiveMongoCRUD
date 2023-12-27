@@ -1,5 +1,9 @@
 package com.deepak.mongoreactive.exception;
 
+import com.deepak.mongoreactive.exception.models.AppointmnetNotFoundException;
+import com.deepak.mongoreactive.exception.models.CannotUpdatePhoneNumberException;
+import com.deepak.mongoreactive.exception.models.UserAlreadyExistsException;
+import com.deepak.mongoreactive.exception.models.UserNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import org.slf4j.Logger;
@@ -43,6 +47,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> handleDuplicateUser(UserAlreadyExistsException ex) {
         String errorMessage = "User already exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+    }
+
+    @ExceptionHandler(AppointmnetNotFoundException.class)
+    public ResponseEntity<String> handleAppointmentNotFound(AppointmnetNotFoundException ex) {
+        String errorMessage = "Appointment does not exists: " + ex.getMessage();
         LOGGER.error(errorMessage);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }

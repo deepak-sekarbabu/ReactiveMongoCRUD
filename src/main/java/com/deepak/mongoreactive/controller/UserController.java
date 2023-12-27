@@ -44,7 +44,7 @@ public class UserController {
      */
 
     @PostMapping
-    @Operation(summary = "Create a new User")
+    @Operation(summary = "Create a new User with appointment")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created"),
             @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),

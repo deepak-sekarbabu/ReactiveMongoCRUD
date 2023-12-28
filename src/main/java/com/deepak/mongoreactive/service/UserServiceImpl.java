@@ -6,6 +6,8 @@ import com.deepak.mongoreactive.repository.UserRepository;
 import com.mongodb.client.result.DeleteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -44,10 +46,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Flux<User> getUsers(int limit, int offset) {
         LOGGER.info("Attempting to retrieve users with limit {} and offset {}", limit, offset);
-
-        return this.userRepository.findAll()
-                .skip(offset)
-                .take(limit)
+        Pageable pageable = PageRequest.of(limit, offset);
+        return userRepository.findAllBy(pageable)
                 .doOnNext(user -> LOGGER.info("User retrieved successfully: {}", user.getId()))
                 .doOnError(error -> LOGGER.error("Error occurred while fetching users: {}",
                         error.getMessage()))

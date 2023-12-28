@@ -60,9 +60,9 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Users retrieved")
     })
     public Flux<User> getAllUsers(
-            @RequestParam(value = "limit", defaultValue = "100") int limit,
-            @RequestParam(value = "offset", defaultValue = "0") int offset) {
-        return this.userService.getUsers(limit, offset);
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return this.userService.getUsers(offset,limit );
     }
 
 

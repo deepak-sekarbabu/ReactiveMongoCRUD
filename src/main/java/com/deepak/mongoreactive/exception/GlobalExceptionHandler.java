@@ -92,7 +92,11 @@ public class GlobalExceptionHandler {
         } else if (ex instanceof ResponseStatusException) {
             if (((ResponseStatusException) ex).getStatusCode().value() == 404) {
                 status = HttpStatus.NOT_FOUND;
-                errors.add("Not Found");
+                if (((ResponseStatusException) ex).getReason() == null) {
+                    errors.add("Not Found");
+                } else {
+                    errors.add(((ResponseStatusException) ex).getReason());
+                }
             } else {
                 errors.add(((ResponseStatusException) ex).getReason());
             }

@@ -1,121 +1,119 @@
-package com.deepak.mongoreactive.controller;
+package com.deepak.mongoreactive.exception;
 
-import com.deepak.mongoreactive.models.ErrorResponse;
-import com.deepak.mongoreactive.models.User;
-import com.deepak.mongoreactive.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import com.deepak.mongoreactive.exception.models.AppointmnetNotFoundException;
+import com.deepak.mongoreactive.exception.models.CannotUpdatePhoneNumberException;
+import com.deepak.mongoreactive.exception.models.UserAlreadyExistsException;
+import com.deepak.mongoreactive.exception.models.UserNotFoundException;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ResponseStatusException;
 
-@RestController
-@RequestMapping("/users")
-@Tag(name = "User", description = "Handles CRUD operations for User resources")
-@Validated
-public class UserController {
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-    private final UserService userService;
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
+        LOGGER.error("An error occurred: {}", ex.getMessage());
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred. Please try again later.");
     }
 
-    /**
-     * User REST controller.
-     * Handles CRUD operations for User resources.
-     * <p>
-     * Mappings:
-     *
-     * @PostMapping - Creates a new User from request body.
-     * @GetMapping - Gets all Users.
-     * @GetMapping("/{id}") - Gets User by ID.
-     * @PutMapping("/{id}") - Updates User by ID from request body.
-     * @DeleteMapping("/{id}") - Deletes User by ID.
-     * @GetMapping("/getByPhoneNumber/{phoneNumber} - Gets User by
-     * PhoneNumber
-     */
-
-    @PostMapping
-    @Operation(summary = "Create a new User with appointment")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created"),
-            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "409", description = "User already exists")
-    })
-    public Mono<User> createUser(@Valid @RequestBody Mono<User> userDTO) {
-        return this.userService.saveUser(userDTO);
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        LOGGER.error("Requested User Not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(ex.getMessage());
     }
 
-    @GetMapping
-    @Operation(summary = "Get all users")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved")
-    })
-    public Flux<User> getAllUsers(
-            @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "limit", defaultValue = "10") int limit) {
-        return this.userService.getUsers(offset,limit );
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleDuplicateUser(UserAlreadyExistsException ex) {
+        String errorMessage = "User already exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }
 
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Retrieve user by id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User retrieved"),
-            @ApiResponse(responseCode = "404", description = "User does not exist")
-    })
-    public Mono<User> getUserById(@Parameter(description = "The userId associated with the user's account") @PathVariable String id) {
-        return this.userService.getUserById(id);
+    @ExceptionHandler(AppointmnetNotFoundException.class)
+    public ResponseEntity<String> handleAppointmentNotFound(AppointmnetNotFoundException ex) {
+        String errorMessage = "Appointment does not exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update user information by id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User updated"),
-            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "User does not exist"),
-            @ApiResponse(responseCode = "409", description = "User update conflict")
-    })
-    public Mono<User> updateUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id, @RequestBody Mono<User> updatedUserDTO) {
-        return this.userService.updateUserInformation(id, updatedUserDTO);
+    @ExceptionHandler(CannotUpdatePhoneNumberException.class)
+    public ResponseEntity<String> handleUpdatePhoneNumberUsedByAnotherUser(CannotUpdatePhoneNumberException ex) {
+        String errorMessage = "User with phone number exists: " + ex.getMessage();
+        LOGGER.error(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete user by id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User deleted"),
-            @ApiResponse(responseCode = "404", description = "User does not exist")
-    })
-    public Mono<Void> deleteUser(@Parameter(description = "The userId associated with the user's account") @PathVariable String id) {
-        return this.userService.deleteUser(id);
+    @ExceptionHandler({ValidationException.class, WebExchangeBindException.class,
+            MethodArgumentNotValidException.class, ResponseStatusException.class,
+            ConstraintViolationException.class})
+    public ResponseEntity<Object> handleValidationExceptions(Exception ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now().format(formatter));
+        HttpStatus status = HttpStatus.BAD_REQUEST; // Default status
+
+        List<String> errors = new ArrayList<>();
+
+        if (ex instanceof MethodArgumentNotValidException) {
+            MethodArgumentNotValidException validationException = (MethodArgumentNotValidException) ex;
+            errors = validationException.getBindingResult()
+                    .getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+        } else if (ex instanceof WebExchangeBindException) {
+            WebExchangeBindException bindException = (WebExchangeBindException) ex;
+            errors = bindException.getBindingResult()
+                    .getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+        } else if (ex instanceof ResponseStatusException) {
+            if (((ResponseStatusException) ex).getStatusCode().value() == 404) {
+                status = HttpStatus.NOT_FOUND;
+                if (((ResponseStatusException) ex).getReason() == null) {
+                    errors.add("Not Found");
+                } else {
+                    errors.add(((ResponseStatusException) ex).getReason());
+                }
+            } else {
+                errors.add(((ResponseStatusException) ex).getReason());
+            }
+
+        } else {
+            // Handle other validation-related exceptions here
+            // For example, if ValidationException is another custom exception
+            errors.add(ex.getMessage()); // Add the exception message to errors
+        }
+
+        body.put("status", status.value());
+        if (!errors.isEmpty()) {
+            body.put("errors", errors);
+        }
+
+        return new ResponseEntity<>(body, status);
     }
 
-    @GetMapping("/getByPhoneNumber/{phoneNumber}")
-    @Operation(summary = "Get user by phoneNumber")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User retrieved"),
-            @ApiResponse(responseCode = "404", description = "User does not exist")
-    })
-    public Mono<User> getUserByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
-        return this.userService.findByPhoneNumber(phoneNumber);
-    }
-
-    @GetMapping("/getUserId/{phoneNumber}")
-    @Operation(summary = "Get userId by phoneNumber")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User Id retrieved"),
-            @ApiResponse(responseCode = "404", description = "User does not exist")
-    })
-    public Mono<String> getUserIdByPhoneNumber(@Parameter(description = "The phone number associated with the user's account") @PathVariable String phoneNumber) {
-        return this.userService.findUserIdByPhoneNumber(phoneNumber);
-    }
 
 }
